@@ -1,6 +1,8 @@
 package tahwil
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type Value struct {
 	Refid uint64      `json:"refid"`
@@ -14,15 +16,28 @@ type InvalidValueError struct {
 }
 
 func (e *InvalidValueError) Error() string {
-	return "tahwil.Value: failed to decode " + e.Kind
+	return "tahwil.Value: failed to decode kind \"" + e.Kind + "\""
+}
+
+type InvalidValueKindError struct {
+	Kind string
+}
+
+func (e *InvalidValueKindError) Error() string {
+	return "tahwil.Value: invalid value kind \"" + e.Kind + "\""
 }
 
 // fixTypes recursively fixes field types after json.Unmarshal
 func fixTypes(kind string, v interface{}) (res interface{}, err error) {
 	switch kind {
 	default:
+		if v == nil {
+			return v, nil
+		}
+		return nil, &InvalidValueKindError{Kind: kind}
+	case "string", "bool":
 		return v, nil
-	case "int":
+	case "ref", "int":
 		return int(v.(float64)), nil
 	case "int8":
 		return int8(v.(float64)), nil
