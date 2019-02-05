@@ -1,6 +1,7 @@
 package tahwil
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 )
@@ -8,12 +9,13 @@ import (
 type unmarshalJSONTest struct {
 	in  string
 	out *Value
-	err error
+	err interface{}
 }
 
 func unmarshalJSONTests() []unmarshalJSONTest {
 	res := make([]unmarshalJSONTest, 0)
 
+	res = append(res, unmarshalJSONTest{in: `null`, out: &Value{}})
 	res = append(res, unmarshalJSONTest{in: `{}`, out: &Value{}})
 	res = append(res, unmarshalJSONTest{in: `{
 		"refid": 1,
@@ -356,11 +358,6 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 			"kind": "uintptr",
 			"value": "aaa"
 		}`,
-		out: &Value{
-			Refid: 1,
-			Kind:  "uintptr",
-			Value: "aaa",
-		},
 		err: &InvalidValueKindError{Kind: "uintptr"},
 	})
 	res = append(res, unmarshalJSONTest{
@@ -369,11 +366,6 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 			"kind": "byte",
 			"value": "aaa"
 		}`,
-		out: &Value{
-			Refid: 1,
-			Kind:  "byte",
-			Value: "aaa",
-		},
 		err: &InvalidValueKindError{Kind: "byte"},
 	})
 	res = append(res, unmarshalJSONTest{
@@ -389,6 +381,100 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 		},
 		err: &InvalidValueKindError{Kind: "rune"},
 	})
+	res = append(res, unmarshalJSONTest{
+		in: `{
+			"refid": 1,
+			"kind": "string", 
+			"value": {"error"}
+		}`,
+		err: "invalid character '}' after object key",
+	})
+	res = append(res, unmarshalJSONTest{
+		in: `{
+			"refid": 1,
+			"kind": "ptr", 
+			"value": "invalid"
+		}`,
+		err: &InvalidValueError{Kind: "ptr", Value: "invalid"},
+	})
+	res = append(res, unmarshalJSONTest{
+		in: `{
+			"refid": 1,
+			"kind": "ptr", 
+			"value": {
+				"refid": 1,
+				"kind": "ptr",
+				"value": "invalid"
+			}
+		}`,
+		err: &InvalidValueError{Kind: "ptr", Value: "invalid"},
+	})
+	res = append(res, unmarshalJSONTest{
+		in: `{
+			"refid": 1,
+			"kind": "struct", 
+			"value": "invalid"
+		}`,
+		err: &InvalidValueError{Kind: "struct", Value: "invalid"},
+	})
+	res = append(res, unmarshalJSONTest{
+		in: `{
+			"refid": 1,
+			"kind": "struct", 
+			"value": {
+				"arg": {
+					"refid": 1,
+					"kind": "struct", 
+					"value": "invalid"
+				}
+			}
+		}`,
+		err: &InvalidValueError{Kind: "struct", Value: "invalid"},
+	})
+	res = append(res, unmarshalJSONTest{
+		in: `{
+			"refid": 1,
+			"kind": "map", 
+			"value": "invalid"
+		}`,
+		err: &InvalidValueError{Kind: "map", Value: "invalid"},
+	})
+	res = append(res, unmarshalJSONTest{
+		in: `{
+			"refid": 1,
+			"kind": "map", 
+			"value": {
+				"arg": {
+					"refid": 1,
+					"kind": "map", 
+					"value": "invalid"
+				}
+			}
+		}`,
+		err: &InvalidValueError{Kind: "map", Value: "invalid"},
+	})
+	res = append(res, unmarshalJSONTest{
+		in: `{
+			"refid": 1,
+			"kind": "slice", 
+			"value": "invalid"
+		}`,
+		err: &InvalidValueError{Kind: "slice", Value: "invalid"},
+	})
+	res = append(res, unmarshalJSONTest{
+		in: `{
+			"refid": 1,
+			"kind": "slice", 
+			"value": [
+				{
+					"refid": 1,
+					"kind": "slice", 
+					"value": "invalid"
+				}
+			]
+		}`,
+		err: &InvalidValueError{Kind: "map", Value: "invalid"},
+	})
 
 	return res[0:len(res):len(res)]
 }
@@ -398,12 +484,24 @@ func TestValue_UnmarshalJSON(t *testing.T) {
 		v := &Value{}
 		err := v.UnmarshalJSON([]byte(arg.in))
 		if err != nil {
-			if !reflect.DeepEqual(arg.err, err) {
+			if serr, ok := err.(*json.SyntaxError); ok {
+				if serr.Error() != arg.err {
+					t.Fatalf("UnmarshalJSON: %v", err)
+				}
+			} else if !reflect.DeepEqual(arg.err, err) {
 				t.Fatalf("UnmarshalJSON: %v", err)
 			}
 		} else if !reflect.DeepEqual(arg.out, v) {
 			t.Errorf("#%d: mismatch\nhave: %#+v\nwant: %#+v", i, v, arg.out)
 			continue
 		}
+	}
+}
+
+func TestInvalidValueKindError_Error(t *testing.T) {
+	err := &InvalidValueKindError{Kind:"invalid"}
+	expected := "tahwil.Value: invalid value kind \"" + err.Kind + "\""
+	if err.Error() != expected {
+		t.Errorf("mismatch\nhave: %#+v\nwant: %#+v", err.Error(), expected)
 	}
 }

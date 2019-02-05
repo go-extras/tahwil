@@ -214,3 +214,34 @@ Children:
 ```
 
 As you can see, Arthur is displayed here 3 times - first as a main person, and then as a parent of the both children.
+
+## Limitations
+
+### Supported types (kinds)
+
+We support the followin go built-in types (kinds):
+
+* string
+* bool
+* int
+* int8
+* int16
+* int32
+* int64
+* uint
+* uint8
+* uint16
+* uint32
+* uint64
+* float32
+* float64
+* ptr
+* struct
+* map
+* slice
+
+In addition `tahwil` adds `ref` type, which is used to refer to the cyclic reference and thus avoid endless recursion.
+
+Structs, slices, maps and pointers must pointer to one of the supported types.
+
+##

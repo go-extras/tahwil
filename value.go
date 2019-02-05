@@ -2,6 +2,7 @@ package tahwil
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 type Value struct {
@@ -12,11 +13,12 @@ type Value struct {
 
 // An InvalidValueError describes invalid Value state.
 type InvalidValueError struct {
+	Value interface{}
 	Kind string
 }
 
 func (e *InvalidValueError) Error() string {
-	return "tahwil.Value: failed to decode kind \"" + e.Kind + "\""
+	return fmt.Sprintf("tahwil.Value: invalid value \"%#v\" for kind \"%s\"", e.Value, e.Kind)
 }
 
 type InvalidValueKindError struct {
@@ -64,7 +66,7 @@ func fixTypes(kind string, v interface{}) (res interface{}, err error) {
 	case "ptr":
 		m, ok := v.(map[string]interface{})
 		if !ok {
-			return nil, &InvalidValueError{Kind: kind}
+			return nil, &InvalidValueError{Kind: kind, Value: v}
 		}
 		iv := &Value{
 			Refid: uint64(m["refid"].(float64)),
@@ -81,7 +83,7 @@ func fixTypes(kind string, v interface{}) (res interface{}, err error) {
 	case "struct", "map":
 		m, ok := v.(map[string]interface{})
 		if !ok {
-			return nil, &InvalidValueError{Kind: kind}
+			return nil, &InvalidValueError{Kind: kind, Value: v}
 		}
 		for k, mv := range m {
 			m[k], err = fixTypes("ptr", mv)
@@ -90,10 +92,10 @@ func fixTypes(kind string, v interface{}) (res interface{}, err error) {
 			}
 		}
 		return m, nil
-	case "array", "slice":
+	case /*"array", */"slice": // TODO: support array?
 		m, ok := v.([]interface{})
 		if !ok {
-			return nil, &InvalidValueError{Kind: kind}
+			return nil, &InvalidValueError{Kind: kind, Value: v}
 		}
 		for k, mv := range m {
 			m[k], err = fixTypes("ptr", mv)
