@@ -31,6 +31,12 @@ func newValueMapper() *valueMapper {
 	}
 }
 
+func (vm *valueMapper) saveRef(v reflect.Value) uint64 {
+	refid := vm.nextRefid()
+	vm.refs[v.Pointer()] = refid
+	return refid
+}
+
 func (vm *valueMapper) nextRefid() uint64 {
 	vm.lastRefid += 1
 	return vm.lastRefid
@@ -39,7 +45,7 @@ func (vm *valueMapper) nextRefid() uint64 {
 func (vm *valueMapper) toValueSlice(v reflect.Value) (result []*Value, err error) {
 	result = make([]*Value, v.Len(), v.Len())
 	for i := 0; i < v.Len(); i++ {
-		result[i], err = vm.toValue(v.Index(i).Interface())
+		result[i], err = vm.toValue(v.Index(i))
 		if err != nil {
 			return nil, err
 		}
@@ -60,7 +66,7 @@ func (vm *valueMapper) toValueMap(v reflect.Value) (result map[string]*Value, er
 			i := idx.Interface()
 			val := v.MapIndex(idx)
 			resIdx := fmt.Sprintf("%v", i)
-			result[resIdx], err = vm.toValue(val.Interface())
+			result[resIdx], err = vm.toValue(val)
 			if err != nil {
 				return nil, err
 			}
@@ -83,7 +89,7 @@ func (vm *valueMapper) toValueMap(v reflect.Value) (result map[string]*Value, er
 			if !f.CanInterface() {
 				continue
 			}
-			result[k], err = vm.toValue(f.Interface())
+			result[k], err = vm.toValue(f)
 			if err != nil {
 				return nil, err
 			}
@@ -94,13 +100,19 @@ func (vm *valueMapper) toValueMap(v reflect.Value) (result map[string]*Value, er
 	return nil, &InvalidMapperKindError{Kind: kind.String()}
 }
 
-func (vm *valueMapper) toValue(i interface{}) (result *Value, err error) {
+func (vm *valueMapper) toValue(v reflect.Value) (result *Value, err error) {
 	result = &Value{}
-
-	v := reflect.ValueOf(i)
 	kind := v.Kind()
 
-	if kind == reflect.Chan || kind == reflect.Func || kind == reflect.Interface {
+	// special case for interface (internally interfaces act similarly to pointers,
+	// but we don't want to store them like pointers)
+	if kind == reflect.Interface {
+		v = v.Elem()
+		kind = v.Kind()
+	}
+
+	if kind == reflect.Chan || kind == reflect.Func ||
+		kind == reflect.Uintptr || kind == reflect.Array || kind == reflect.UnsafePointer {
 		return nil, &InvalidMapperKindError{Kind: kind.String()}
 	}
 
@@ -111,28 +123,26 @@ func (vm *valueMapper) toValue(i interface{}) (result *Value, err error) {
 			result.Value = refid
 			return
 		}
-		if v.IsNil() {
-			result.Refid = vm.nextRefid()
-			result.Kind = "ptr"
+
+		result.Refid = vm.saveRef(v)
+		result.Kind = "ptr"
+
+		if v.IsNil() || v.Elem().Interface() == nil {
+			// nil values a final, no further elements
 			result.Value = nil
-			p := v.Pointer()
-			vm.refs[p] = result.Refid
 			return
 		}
 
-		result.Refid = vm.nextRefid()
-		result.Kind = "ptr"
-		p := v.Pointer()
-		vm.refs[p] = result.Refid
-		val, err := vm.toValue(v.Elem().Interface())
+		// recursively proceed to the pointer value
+		val, err := vm.toValue(v.Elem())
 		if err != nil {
 			return nil, err
 		}
 		result.Value = val
-		return result, nil
+		return result, err
 	}
 
-	if kind == reflect.Slice || kind == reflect.Array {
+	if kind == reflect.Slice /*|| kind == reflect.Array*/ { // TODO: implement array?
 		result.Refid = vm.nextRefid()
 		result.Kind = kind.String()
 		result.Value, err = vm.toValueSlice(v)
@@ -145,6 +155,8 @@ func (vm *valueMapper) toValue(i interface{}) (result *Value, err error) {
 	if kind == reflect.Map || kind == reflect.Struct {
 		result.Refid = vm.nextRefid()
 		result.Kind = kind.String()
+		// not only maps can be set here, but also slices as they
+		// can be represented as a map[fieldName]value
 		result.Value, err = vm.toValueMap(v)
 		if err != nil {
 			return nil, err
@@ -152,6 +164,7 @@ func (vm *valueMapper) toValue(i interface{}) (result *Value, err error) {
 		return
 	}
 
+	// here we process the remaining kinds ("simple" ones)
 	result.Refid = vm.nextRefid()
 	result.Kind = v.Type().Name()
 	if result.Kind == "" {
@@ -162,13 +175,39 @@ func (vm *valueMapper) toValue(i interface{}) (result *Value, err error) {
 	return
 }
 
+// ToValue transforms i to *Value.
+// NOTES:
+// - (*Value).Kind will be set to the reflected value kind (see reflect.Kind).
+// - each value will get its own (*Value).Refid that is a counter incremented
+//   with every next (underlying value).
+// - each "simple" type (int, string, bool) will be stored in (*Value).Value
+// - each type that holds other values inside (ptr, map, slice, struct) will
+//   produce a further *Value that will be stored in (*Value).Value.
+// - the transformation process will continue until all the non-simple types are processed.
+// - non-serializable types (func, chan) will lead to a mapping error.
+// - there are unsupported serializable types: array, complex[64,128], unsafe pointer.
+// - ptr type will produce *Value with an underlying value.
+// - nil ptr will result in (*Value).Value set to nil.
+// - each non-nil pointer Refid is stored in a Refid map. This map is used
+//   to break circular references (when transforming a pointer the Refid map is being checked,
+//   and if the pointer is already on the list, (*Value).Kind is set to a special "ref" type
+//   and (*Value).Value is set to the Refid of the previously transformed value).
+// - struct will produce *Value whose Value property will be set to the map
+//   of exported struct fields (keys will correspond to the field name or to the json tag value,
+//   values will be *Value, with the underlying values of the fields), if a field is
+//   exported but its json tag value is set to "_" or "-", it will be ignored.
+// - map will produce a map of *Value with the key names that correspond to the original
+//   map keys, and the values will be *Value, with corresponding map values transformed.
+// - slice will produce a slice of *Value in the same order like the original slice has
+// - i is expected to be a pointer, but if it's not, a pointer from it will be created,
+//   it means that even for "simple" types the resulting (*Value).Value will hold *Value
+//   that will represent the original value (mapped to Value{})
+// The result is *Value and an error, if there was a mapping error.
 func ToValue(i interface{}) (*Value, error) {
 	v := reflect.ValueOf(i)
 	if v.Kind() != reflect.Ptr {
-		i = &i
+		v = reflect.ValueOf(&i)
 	}
-
 	vm := newValueMapper()
-
-	return vm.toValue(i)
+	return vm.toValue(v)
 }

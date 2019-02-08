@@ -14,11 +14,11 @@ type Value struct {
 // An InvalidValueError describes invalid Value state.
 type InvalidValueError struct {
 	Value interface{}
-	Kind string
+	Kind  string
 }
 
 func (e *InvalidValueError) Error() string {
-	return fmt.Sprintf("tahwil.Value: invalid value \"%#v\" for kind \"%s\"", e.Value, e.Kind)
+	return fmt.Sprintf("tahwil.Value: invalid value %#v for kind %#v", e.Value, e.Kind)
 }
 
 type InvalidValueKindError struct {
@@ -92,7 +92,7 @@ func fixTypes(kind string, v interface{}) (res interface{}, err error) {
 			}
 		}
 		return m, nil
-	case /*"array", */"slice": // TODO: support array?
+	case /*"array", */ "slice": // TODO: support array?
 		m, ok := v.([]interface{})
 		if !ok {
 			return nil, &InvalidValueError{Kind: kind, Value: v}

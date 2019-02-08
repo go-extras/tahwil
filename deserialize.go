@@ -90,27 +90,65 @@ func (vu *valueUnmapper) fromValue(data *Value, v reflect.Value) (err error) {
 			v.SetFloat(fval)
 		}
 	case /*"array", */ "slice": // TODO: how to deal with array?
-		m := data.Value.([]interface{})
-		sl := reflect.MakeSlice(v.Type(), len(m), len(m))
+		if data.Value == nil {
+			return
+		}
+		var sl reflect.Value
+		mi, ok := data.Value.([]interface{})
+		if ok {
+			sl = reflect.MakeSlice(v.Type(), len(mi), len(mi))
+		}
+		mv, ok := data.Value.([]*Value)
+		if ok {
+			sl = reflect.MakeSlice(v.Type(), len(mv), len(mv))
+		}
+		if mi == nil && mv == nil {
+			return &InvalidValueError{Value: data.Value, Kind: data.Kind}
+		}
+
 		v.Set(sl)
 		for i := 0; i < v.Len(); i++ {
+			var x *Value
 			el := v.Index(i)
-			x := m[i].(*Value)
+			if mv != nil {
+				x = mv[i]
+			} else {
+				x = mi[i].(*Value)
+			}
 			err = vu.fromValue(x, el)
 			if err != nil {
 				return
 			}
 		}
 	case "map":
+		if data.Value == nil {
+			return
+		}
 		if v.Kind() != reflect.Map {
 			return &InvalidUnmapperKindError{Expected: "map", Kind: v.Kind().String()}
 		}
-		m := data.Value.(map[string]interface{})
-		rm := reflect.ValueOf(m)
-		keys := rm.MapKeys()
+		var keys []reflect.Value
+		mi, ok := data.Value.(map[string]interface{})
+		if ok {
+			rm := reflect.ValueOf(mi)
+			keys = rm.MapKeys()
+		}
+		mv, ok := data.Value.(map[string]*Value)
+		if ok {
+			rm := reflect.ValueOf(mv)
+			keys = rm.MapKeys()
+		}
+		if mi == nil && mv == nil {
+			return &InvalidValueError{Value: data.Value, Kind: data.Kind}
+		}
 		for _, key := range keys {
 			f := v.MapIndex(key)
-			x := m[key.String()].(*Value)
+			var x *Value
+			if mv != nil {
+				x = mv[key.String()]
+			} else {
+				x = mi[key.String()].(*Value)
+			}
 			if f.IsValid() {
 				// A Value can be changed only if it is
 				// addressable and was not obtained by
@@ -149,9 +187,21 @@ func (vu *valueUnmapper) fromValue(data *Value, v reflect.Value) (err error) {
 		if v.Kind() != reflect.Struct {
 			return &InvalidUnmapperKindError{Expected: "struct", Kind: v.Kind().String()}
 		}
-		m := data.Value.(map[string]interface{})
-		rm := reflect.ValueOf(m)
-		keys := rm.MapKeys()
+		var keys []reflect.Value
+		mi, ok := data.Value.(map[string]interface{})
+		if ok {
+			rm := reflect.ValueOf(mi)
+			keys = rm.MapKeys()
+		}
+		mv, ok := data.Value.(map[string]*Value)
+		if ok {
+			rm := reflect.ValueOf(mv)
+			keys = rm.MapKeys()
+		}
+		if mi == nil && mv == nil {
+			return &InvalidValueError{Value: data.Value, Kind: data.Kind}
+		}
+
 		for _, key := range keys {
 			tagName := key.String()
 			keyName := vu.fieldByTag(v.Type(), tagName)
@@ -160,7 +210,12 @@ func (vu *valueUnmapper) fromValue(data *Value, v reflect.Value) (err error) {
 				continue
 			}
 			f := v.FieldByName(keyName)
-			x := m[tagName].(*Value)
+			var x *Value
+			if mv != nil {
+				x = mv[tagName]
+			} else {
+				x = mi[tagName].(*Value)
+			}
 			if f.IsValid() {
 				err = vu.fromValue(x, f)
 				if err != nil {

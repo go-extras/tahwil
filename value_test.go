@@ -473,7 +473,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 				}
 			]
 		}`,
-		err: &InvalidValueError{Kind: "map", Value: "invalid"},
+		err: &InvalidValueError{Kind: "slice", Value: "invalid"},
 	})
 
 	return res[0:len(res):len(res)]
@@ -499,8 +499,19 @@ func TestValue_UnmarshalJSON(t *testing.T) {
 }
 
 func TestInvalidValueKindError_Error(t *testing.T) {
-	err := &InvalidValueKindError{Kind:"invalid"}
+	err := &InvalidValueKindError{Kind: "invalid"}
 	expected := "tahwil.Value: invalid value kind \"" + err.Kind + "\""
+	if err.Error() != expected {
+		t.Errorf("mismatch\nhave: %#+v\nwant: %#+v", err.Error(), expected)
+	}
+}
+
+func TestInvalidValueError_Error(t *testing.T) {
+	err := &InvalidValueError{
+		Value: "val",
+		Kind:  "invalid",
+	}
+	expected := "tahwil.Value: invalid value \"val\" for kind \"invalid\""
 	if err.Error() != expected {
 		t.Errorf("mismatch\nhave: %#+v\nwant: %#+v", err.Error(), expected)
 	}

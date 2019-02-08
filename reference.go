@@ -1,5 +1,10 @@
 package tahwil
 
+import (
+	"fmt"
+	"reflect"
+)
+
 type Reference struct {
 	Refid uint64
 	Value *Value
@@ -45,26 +50,48 @@ func (r *Resolver) resolve(v *Value) {
 	}
 	switch v.Kind {
 	default:
-		return
 	case "ptr":
 		if v.Value == nil {
 			return
 		}
 		iv := v.Value.(*Value)
 		r.resolve(iv)
-		return
 	case "struct", "map":
-		for _, mv := range v.Value.(map[string]interface{}) {
-			iv := mv.(*Value)
-			r.resolve(iv)
+		if v.Value == nil {
+			return
 		}
-	case "array", "slice":
-		for _, mv := range v.Value.([]interface{}) {
-			iv := mv.(*Value)
-			r.resolve(iv)
+		if m, ok := v.Value.(map[string]interface{}); ok {
+			for _, mv := range m {
+				iv := mv.(*Value)
+				r.resolve(iv)
+			}
+		} else if m, ok := v.Value.(map[string]*Value); ok {
+			for _, mv := range m {
+				iv := mv
+				r.resolve(iv)
+			}
+		} else {
+			panic(fmt.Errorf("unexpected type: %#+v", reflect.TypeOf(v.Value)))
+		}
+	case /*"array", */ "slice":
+		if v.Value == nil {
+			return
+		}
+		if m, ok := v.Value.([]interface{}); ok {
+			for _, mv := range m {
+				iv := mv.(*Value)
+				r.resolve(iv)
+			}
+		} else if m, ok := v.Value.([]*Value); ok {
+			for _, mv := range m {
+				iv := mv
+				r.resolve(iv)
+			}
+		} else {
+			panic(fmt.Errorf("unexpected type: %#+v", reflect.TypeOf(v.Value)))
 		}
 	case "ref":
-		refid := uint64(v.Value.(float64))
+		refid := uint64(v.Value.(uint64))
 		iv := r.resolvedRefs[refid]
 		if iv != nil {
 			v.Value = &Reference{
