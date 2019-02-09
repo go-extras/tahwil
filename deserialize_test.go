@@ -11,14 +11,116 @@ type personT struct {
 	Children []*personT `json:"children"`
 }
 
+type alltypesT struct {
+	Bool    bool
+	Int     int
+	Uint    uint
+	Float   float64
+	Slice   []int
+	Map     map[string]int
+	String  string
+	Pointer *string
+}
+
 type fromValueTest struct {
 	in  *Value
-	out *personT
+	out interface{}
 	err error
 }
 
 func fromValueTests() []fromValueTest {
 	result := make([]fromValueTest, 0)
+
+	str := "xxx"
+	alltypes := &alltypesT{
+		String:  "string",
+		Slice:   []int{1, 2},
+		Map:     map[string]int{"1": 1, "2": 2},
+		Pointer: &str,
+		Bool:    true,
+		Float:   42.42,
+		Int:     42,
+		Uint:    42,
+	}
+	result = append(result, fromValueTest{
+		in: &Value{
+			Refid: 1,
+			Kind:  "ptr",
+			Value: &Value{
+				Refid: 2,
+				Kind:  "struct",
+				Value: map[string]*Value{
+					"String": {
+						Refid: 3,
+						Kind:  "string",
+						Value: "string",
+					},
+					"Slice": {
+						Refid: 4,
+						Kind:  "slice",
+						Value: []*Value{
+							{
+								Refid: 5,
+								Kind:  "int",
+								Value: int64(1),
+							},
+							{
+								Refid: 6,
+								Kind:  "int",
+								Value: int64(2),
+							},
+						},
+					},
+					"Map": {
+						Refid: 7,
+						Kind:  "map",
+						Value: map[string]*Value{
+							"1": {
+								Refid: 8,
+								Kind:  "int",
+								Value: int64(1),
+							},
+							"2": {
+								Refid: 9,
+								Kind:  "int",
+								Value: int64(2),
+							},
+						},
+					},
+					"Pointer": {
+						Refid: 10,
+						Kind:  "ptr",
+						Value: &Value{
+							Refid: 11,
+							Kind:  "string",
+							Value: "xxx",
+						},
+					},
+					"Bool": {
+						Refid: 12,
+						Kind:  "bool",
+						Value: true,
+					},
+					"Float": {
+						Refid: 13,
+						Kind:  "float64",
+						Value: 42.42,
+					},
+					"Int": {
+						Refid: 14,
+						Kind:  "int",
+						Value: int64(42),
+					},
+					"Uint": {
+						Refid: 15,
+						Kind:  "uint",
+						Value: uint64(42),
+					},
+				},
+			},
+		},
+		out: alltypes,
+	})
 
 	result = append(result, fromValueTest{
 		in: &Value{
@@ -108,7 +210,9 @@ func fromValueTests() []fromValueTest {
 
 func TestFromValue(t *testing.T) {
 	for i, arg := range fromValueTests() {
-		p := &personT{}
+		p := reflect.New(reflect.TypeOf(arg.out).Elem()).Interface()
+		//at, ok := p.(*personT)
+		//fmt.Println(at, ok)
 		err := FromValue(arg.in, p)
 		if err != nil {
 			t.Fatalf("#%d: %#+v", i, err)

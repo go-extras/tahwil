@@ -1,6 +1,7 @@
 package tahwil
 
 import (
+	"fmt"
 	"reflect"
 )
 
@@ -141,25 +142,22 @@ func (vu *valueUnmapper) fromValue(data *Value, v reflect.Value) (err error) {
 		if mi == nil && mv == nil {
 			return &InvalidValueError{Value: data.Value, Kind: data.Kind}
 		}
+		v.Set(reflect.MakeMap(v.Type()))
 		for _, key := range keys {
-			f := v.MapIndex(key)
 			var x *Value
 			if mv != nil {
 				x = mv[key.String()]
 			} else {
 				x = mi[key.String()].(*Value)
 			}
-			if f.IsValid() {
-				// A Value can be changed only if it is
-				// addressable and was not obtained by
-				// the use of unexported struct fields.
-				if f.CanSet() {
-					err = vu.fromValue(x, f)
-					if err != nil {
-						return
-					}
-				}
+			f := reflect.New(v.Type().Elem()).Elem()
+			err = vu.fromValue(x, f)
+			if err != nil {
+				return
 			}
+			fmt.Println(key, f)
+			v.SetMapIndex(key, f)
+			fmt.Println(v)
 		}
 	case "ptr":
 		if data.Value == nil {
@@ -184,6 +182,9 @@ func (vu *valueUnmapper) fromValue(data *Value, v reflect.Value) (err error) {
 			v.SetString(fval)
 		}
 	case "struct":
+		if v.Kind() == reflect.Interface {
+			v = v.Elem()
+		}
 		if v.Kind() != reflect.Struct {
 			return &InvalidUnmapperKindError{Expected: "struct", Kind: v.Kind().String()}
 		}
@@ -206,8 +207,7 @@ func (vu *valueUnmapper) fromValue(data *Value, v reflect.Value) (err error) {
 			tagName := key.String()
 			keyName := vu.fieldByTag(v.Type(), tagName)
 			if keyName == "" {
-				// TODO: maybe error?
-				continue
+				keyName = tagName
 			}
 			f := v.FieldByName(keyName)
 			var x *Value
