@@ -1,0 +1,15 @@
+language: go
+
+notifications:
+  email:
+    recipients:
+      - ask@artprima.cz # Current maintainer
+    on_success: change
+    on_failure: always
+
+go: 
+ - "1.13"
+ - "1.14"
+
+script:
+ - go test -race ./... -v
