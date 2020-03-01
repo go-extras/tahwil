@@ -1,8 +1,10 @@
-package tahwil
+package tahwil_test
 
 import (
 	"reflect"
 	"testing"
+
+	. "github.com/go-extras/tahwil"
 )
 
 type resolverTest struct {
@@ -18,19 +20,19 @@ func resolverTests() []resolverTest {
 	result = append(result, resolverTest{
 		in: &Value{
 			Refid: 1,
-			Kind:  "ptr",
+			Kind:  Ptr,
 			Value: &Value{
 				Refid: 2,
-				Kind:  "bool",
+				Kind:  Bool,
 				Value: true,
 			},
 		},
 		out: &Value{
 			Refid: 1,
-			Kind:  "ptr",
+			Kind:  Ptr,
 			Value: &Value{
 				Refid: 2,
-				Kind:  "bool",
+				Kind:  Bool,
 				Value: true,
 			},
 		},
@@ -41,22 +43,22 @@ func resolverTests() []resolverTest {
 	result = append(result, resolverTest{
 		in: &Value{
 			Refid: 1,
-			Kind:  "map",
+			Kind:  Map,
 			Value: map[string]interface{}{
 				"test": &Value{
 					Refid: 2,
-					Kind:  "bool",
+					Kind:  Bool,
 					Value: true,
 				},
 			},
 		},
 		out: &Value{
 			Refid: 1,
-			Kind:  "map",
+			Kind:  Map,
 			Value: map[string]interface{}{
 				"test": &Value{
 					Refid: 2,
-					Kind:  "bool",
+					Kind:  Bool,
 					Value: true,
 				},
 			},
@@ -68,22 +70,22 @@ func resolverTests() []resolverTest {
 	result = append(result, resolverTest{
 		in: &Value{
 			Refid: 1,
-			Kind:  "slice",
+			Kind:  Slice,
 			Value: []interface{}{
 				&Value{
 					Refid: 2,
-					Kind:  "bool",
+					Kind:  Bool,
 					Value: true,
 				},
 			},
 		},
 		out: &Value{
 			Refid: 1,
-			Kind:  "slice",
+			Kind:  Slice,
 			Value: []interface{}{
 				&Value{
 					Refid: 2,
-					Kind:  "bool",
+					Kind:  Bool,
 					Value: true,
 				},
 			},
@@ -95,12 +97,12 @@ func resolverTests() []resolverTest {
 	result = append(result, resolverTest{
 		in: &Value{
 			Refid: 1,
-			Kind:  "ptr",
+			Kind:  Ptr,
 			Value: nil,
 		},
 		out: &Value{
 			Refid: 1,
-			Kind:  "ptr",
+			Kind:  Ptr,
 			Value: nil,
 		},
 		hasUnresolved:  false,
@@ -109,10 +111,10 @@ func resolverTests() []resolverTest {
 
 	res1 := &Value{
 		Refid: 1,
-		Kind:  "ptr",
+		Kind:  Ptr,
 		Value: &Value{
 			Refid: 2,
-			Kind:  "ref",
+			Kind:  Ref,
 			Value: true,
 		},
 	}
@@ -123,10 +125,10 @@ func resolverTests() []resolverTest {
 	result = append(result, resolverTest{
 		in: &Value{
 			Refid: 1,
-			Kind:  "ptr",
+			Kind:  Ptr,
 			Value: &Value{
 				Refid: 2,
-				Kind:  "ref",
+				Kind:  Ref,
 				Value: uint64(1),
 			},
 		},
@@ -137,27 +139,27 @@ func resolverTests() []resolverTest {
 
 	res2 := &Value{
 		Refid: 1,
-		Kind:  "ptr",
+		Kind:  Ptr,
 		Value: &Value{
 			Refid: 2,
-			Kind:  "struct",
+			Kind:  Struct,
 			Value: map[string]*Value{
 				"Name": {
 					Refid: 3,
-					Kind:  "ptr",
+					Kind:  Ptr,
 					Value: &Value{
 						Refid: 4,
-						Kind:  "string",
+						Kind:  String,
 						Value: "Mike",
 					},
 				},
 				"Children": {
 					Refid: 5,
-					Kind:  "slice",
+					Kind:  Slice,
 					Value: []*Value{
 						{
 							Refid: 6,
-							Kind:  "ref",
+							Kind:  Ref,
 							Value: nil,
 						},
 					},
@@ -172,27 +174,27 @@ func resolverTests() []resolverTest {
 	result = append(result, resolverTest{
 		in: &Value{
 			Refid: 1,
-			Kind:  "ptr",
+			Kind:  Ptr,
 			Value: &Value{
 				Refid: 2,
-				Kind:  "struct",
+				Kind:  Struct,
 				Value: map[string]*Value{
 					"Name": {
 						Refid: 3,
-						Kind:  "ptr",
+						Kind:  Ptr,
 						Value: &Value{
 							Refid: 4,
-							Kind:  "string",
+							Kind:  String,
 							Value: "Mike",
 						},
 					},
 					"Children": {
 						Refid: 5,
-						Kind:  "slice",
+						Kind:  Slice,
 						Value: []*Value{
 							{
 								Refid: 6,
-								Kind:  "ref",
+								Kind:  Ref,
 								Value: uint64(1),
 							},
 						},
@@ -208,27 +210,27 @@ func resolverTests() []resolverTest {
 	result = append(result, resolverTest{
 		in: &Value{
 			Refid: 1,
-			Kind:  "ptr",
+			Kind:  Ptr,
 			Value: &Value{
 				Refid: 2,
-				Kind:  "struct",
+				Kind:  Struct,
 				Value: map[string]*Value{
 					"Name": {
 						Refid: 3,
-						Kind:  "ptr",
+						Kind:  Ptr,
 						Value: &Value{
 							Refid: 4,
-							Kind:  "string",
+							Kind:  String,
 							Value: "Mike",
 						},
 					},
 					"Children": {
 						Refid: 5,
-						Kind:  "slice",
+						Kind:  Slice,
 						Value: []*Value{
 							{
 								Refid: 6,
-								Kind:  "ref",
+								Kind:  Ref,
 								Value: uint64(9),
 							},
 						},
@@ -242,62 +244,62 @@ func resolverTests() []resolverTest {
 
 	res3 := &Value{
 		Refid: 1,
-		Kind:  "ptr",
+		Kind:  Ptr,
 		Value: &Value{
 			Refid: 2,
-			Kind:  "struct",
+			Kind:  Struct,
 			Value: map[string]*Value{
 				"Sibling": {
 					Refid: 3,
-					Kind:  "ref",
+					Kind:  Ref,
 					Value: uint64(10),
 				},
 				"Name": {
 					Refid: 4,
-					Kind:  "string",
+					Kind:  String,
 					Value: "Mike",
 				},
 				"Parent": {
 					Refid: 5,
-					Kind:  "ptr",
+					Kind:  Ptr,
 					Value: &Value{
 						Refid: 6,
-						Kind:  "struct",
+						Kind:  Struct,
 						Value: map[string]*Value{
 							"Name": {
 								Refid: 7,
-								Kind:  "string",
+								Kind:  String,
 								Value: "Frank",
 							},
 							"Children": {
 								Refid: 8,
-								Kind:  "slice",
+								Kind:  Slice,
 								Value: []*Value{
 									{
 										Refid: 9,
-										Kind:  "ref",
+										Kind:  Ref,
 										Value: uint64(1),
 									},
 									{
 										Refid: 10,
-										Kind:  "ptr",
+										Kind:  Ptr,
 										Value: &Value{
 											Refid: 11,
-											Kind:  "struct",
+											Kind:  Struct,
 											Value: map[string]*Value{
 												"Name": {
 													Refid: 12,
-													Kind:  "string",
+													Kind:  String,
 													Value: "Zak",
 												},
 												"Sibling": {
 													Refid: 13,
-													Kind:  "ref",
+													Kind:  Ref,
 													Value: uint64(1),
 												},
 												"Parent": {
 													Refid: 14,
-													Kind:  "ref",
+													Kind:  Ref,
 													Value: uint64(5),
 												},
 											},
@@ -348,62 +350,62 @@ func resolverTests() []resolverTest {
 	result = append(result, resolverTest{
 		in: &Value{
 			Refid: 1,
-			Kind:  "ptr",
+			Kind:  Ptr,
 			Value: &Value{
 				Refid: 2,
-				Kind:  "struct",
+				Kind:  Struct,
 				Value: map[string]*Value{
 					"Sibling": {
 						Refid: 3,
-						Kind:  "ref",
+						Kind:  Ref,
 						Value: uint64(10),
 					},
 					"Name": {
 						Refid: 4,
-						Kind:  "string",
+						Kind:  String,
 						Value: "Mike",
 					},
 					"Parent": {
 						Refid: 5,
-						Kind:  "ptr",
+						Kind:  Ptr,
 						Value: &Value{
 							Refid: 6,
-							Kind:  "struct",
+							Kind:  Struct,
 							Value: map[string]*Value{
 								"Name": {
 									Refid: 7,
-									Kind:  "string",
+									Kind:  String,
 									Value: "Frank",
 								},
 								"Children": {
 									Refid: 8,
-									Kind:  "slice",
+									Kind:  Slice,
 									Value: []*Value{
 										{
 											Refid: 9,
-											Kind:  "ref",
+											Kind:  Ref,
 											Value: uint64(1),
 										},
 										{
 											Refid: 10,
-											Kind:  "ptr",
+											Kind:  Ptr,
 											Value: &Value{
 												Refid: 11,
-												Kind:  "struct",
+												Kind:  Struct,
 												Value: map[string]*Value{
 													"Name": {
 														Refid: 12,
-														Kind:  "string",
+														Kind:  String,
 														Value: "Zak",
 													},
 													"Sibling": {
 														Refid: 13,
-														Kind:  "ref",
+														Kind:  Ref,
 														Value: uint64(1),
 													},
 													"Parent": {
 														Refid: 14,
-														Kind:  "ref",
+														Kind:  Ref,
 														Value: uint64(5),
 													},
 												},

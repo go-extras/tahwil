@@ -1,9 +1,11 @@
-package tahwil
+package tahwil_test
 
 import (
 	"encoding/json"
 	"reflect"
 	"testing"
+
+	. "github.com/go-extras/tahwil"
 )
 
 type unmarshalJSONTest struct {
@@ -23,7 +25,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 		"value": "aaa"
 }`, out: &Value{
 		Refid: 1,
-		Kind:  "string",
+		Kind:  String,
 		Value: "aaa",
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
@@ -32,7 +34,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 		"value": true
 }`, out: &Value{
 		Refid: 1,
-		Kind:  "bool",
+		Kind:  Bool,
 		Value: true,
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
@@ -41,7 +43,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 		"value": 1
 }`, out: &Value{
 		Refid: 1,
-		Kind:  "int",
+		Kind:  Int,
 		Value: 1,
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
@@ -50,7 +52,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 		"value": 1
 }`, out: &Value{
 		Refid: 1,
-		Kind:  "int8",
+		Kind:  Int8,
 		Value: int8(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
@@ -59,7 +61,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 		"value": 1
 }`, out: &Value{
 		Refid: 1,
-		Kind:  "int16",
+		Kind:  Int16,
 		Value: int16(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
@@ -68,7 +70,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 		"value": 1
 }`, out: &Value{
 		Refid: 1,
-		Kind:  "int32",
+		Kind:  Int32,
 		Value: int32(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
@@ -77,7 +79,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 		"value": 1
 }`, out: &Value{
 		Refid: 1,
-		Kind:  "int64",
+		Kind:  Int64,
 		Value: int64(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
@@ -86,7 +88,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 		"value": 1
 }`, out: &Value{
 		Refid: 1,
-		Kind:  "uint",
+		Kind:  Uint,
 		Value: uint(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
@@ -95,7 +97,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 		"value": 1
 }`, out: &Value{
 		Refid: 1,
-		Kind:  "uint8",
+		Kind:  Uint8,
 		Value: uint8(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
@@ -104,7 +106,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 		"value": 1
 }`, out: &Value{
 		Refid: 1,
-		Kind:  "uint16",
+		Kind:  Uint16,
 		Value: uint16(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
@@ -113,7 +115,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 		"value": 1
 }`, out: &Value{
 		Refid: 1,
-		Kind:  "uint32",
+		Kind:  Uint32,
 		Value: uint32(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
@@ -122,7 +124,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 		"value": 1
 }`, out: &Value{
 		Refid: 1,
-		Kind:  "uint64",
+		Kind:  Uint64,
 		Value: uint64(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
@@ -131,7 +133,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 		"value": 1
 }`, out: &Value{
 		Refid: 1,
-		Kind:  "float32",
+		Kind:  Float32,
 		Value: float32(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
@@ -140,7 +142,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 		"value": 1
 }`, out: &Value{
 		Refid: 1,
-		Kind:  "float64",
+		Kind:  Float64,
 		Value: float64(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
@@ -153,10 +155,10 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 		}
 }`, out: &Value{
 		Refid: 1,
-		Kind:  "ptr",
+		Kind:  Ptr,
 		Value: &Value{
 			Refid: 2,
-			Kind:  "string",
+			Kind:  String,
 			Value: "test",
 		},
 	}})
@@ -181,19 +183,19 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 		}
 }`, out: &Value{
 		Refid: 1,
-		Kind:  "ptr",
+		Kind:  Ptr,
 		Value: &Value{
 			Refid: 2,
-			Kind:  "struct",
+			Kind:  Struct,
 			Value: map[string]interface{}{
 				"name": &Value{
 					Refid: 3,
-					Kind:  "string",
+					Kind:  String,
 					Value: "Arthur",
 				},
 				"children": &Value{
 					Refid: 4,
-					Kind:  "slice",
+					Kind:  Slice,
 					Value: []interface{}{},
 				},
 			},
@@ -251,45 +253,45 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 		}
 }`, out: &Value{
 		Refid: 1,
-		Kind:  "ptr",
+		Kind:  Ptr,
 		Value: &Value{
 			Refid: 2,
-			Kind:  "struct",
+			Kind:  Struct,
 			Value: map[string]interface{}{
 				"name": &Value{
 					Refid: 3,
-					Kind:  "string",
+					Kind:  String,
 					Value: "Arthur",
 				},
 				"parent": &Value{
 					Refid: 4,
-					Kind:  "ptr",
+					Kind:  Ptr,
 					Value: nil,
 				},
 				"children": &Value{
 					Refid: 5,
-					Kind:  "slice",
+					Kind:  Slice,
 					Value: []interface{}{
 						&Value{
 							Refid: 6,
-							Kind:  "ptr",
+							Kind:  Ptr,
 							Value: &Value{
 								Refid: 7,
-								Kind:  "struct",
+								Kind:  Struct,
 								Value: map[string]interface{}{
 									"name": &Value{
 										Refid: 8,
-										Kind:  "string",
+										Kind:  String,
 										Value: "Trillian",
 									},
 									"parent": &Value{
 										Refid: 9,
-										Kind:  "ref",
+										Kind:  Ref,
 										Value: 1,
 									},
 									"children": &Value{
 										Refid: 10,
-										Kind:  "slice",
+										Kind:  Slice,
 										Value: []interface{}{},
 									},
 								},
@@ -395,7 +397,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 			"kind": "ptr", 
 			"value": "invalid"
 		}`,
-		err: &InvalidValueError{Kind: "ptr", Value: "invalid"},
+		err: &InvalidValueError{Kind: Ptr, Value: "invalid"},
 	})
 	res = append(res, unmarshalJSONTest{
 		in: `{
@@ -407,7 +409,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 				"value": "invalid"
 			}
 		}`,
-		err: &InvalidValueError{Kind: "ptr", Value: "invalid"},
+		err: &InvalidValueError{Kind: Ptr, Value: "invalid"},
 	})
 	res = append(res, unmarshalJSONTest{
 		in: `{
@@ -415,7 +417,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 			"kind": "struct", 
 			"value": "invalid"
 		}`,
-		err: &InvalidValueError{Kind: "struct", Value: "invalid"},
+		err: &InvalidValueError{Kind: Struct, Value: "invalid"},
 	})
 	res = append(res, unmarshalJSONTest{
 		in: `{
@@ -429,7 +431,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 				}
 			}
 		}`,
-		err: &InvalidValueError{Kind: "struct", Value: "invalid"},
+		err: &InvalidValueError{Kind: Struct, Value: "invalid"},
 	})
 	res = append(res, unmarshalJSONTest{
 		in: `{
@@ -437,7 +439,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 			"kind": "map", 
 			"value": "invalid"
 		}`,
-		err: &InvalidValueError{Kind: "map", Value: "invalid"},
+		err: &InvalidValueError{Kind: Map, Value: "invalid"},
 	})
 	res = append(res, unmarshalJSONTest{
 		in: `{
@@ -451,7 +453,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 				}
 			}
 		}`,
-		err: &InvalidValueError{Kind: "map", Value: "invalid"},
+		err: &InvalidValueError{Kind: Map, Value: "invalid"},
 	})
 	res = append(res, unmarshalJSONTest{
 		in: `{
@@ -459,7 +461,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 			"kind": "slice", 
 			"value": "invalid"
 		}`,
-		err: &InvalidValueError{Kind: "slice", Value: "invalid"},
+		err: &InvalidValueError{Kind: Slice, Value: "invalid"},
 	})
 	res = append(res, unmarshalJSONTest{
 		in: `{
@@ -473,7 +475,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 				}
 			]
 		}`,
-		err: &InvalidValueError{Kind: "slice", Value: "invalid"},
+		err: &InvalidValueError{Kind: Slice, Value: "invalid"},
 	})
 
 	return res[0:len(res):len(res)]

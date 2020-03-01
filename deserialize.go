@@ -67,276 +67,326 @@ func (vu *valueUnmapper) fieldByTag(t reflect.Type, key string) string {
 	return vu.fieldTagCache[t][key]
 }
 
-// fills v with the values from data
-func (vu *valueUnmapper) fromValue(data *Value, v reflect.Value) (err error) {
-	vu.refs[data.Refid] = v
+func (vu *valueUnmapper) fromBoolValue(data *Value, v reflect.Value) error {
+	if v.Kind() != reflect.Bool {
+		return &InvalidUnmapperKindError{Expected: Bool, Kind: v.Kind().String()}
+	}
 
-	switch data.Kind {
-	default:
-		return &InvalidUnmapperKindError{Kind: data.Kind}
-	case "bool":
-		if v.Kind() != reflect.Bool {
-			return &InvalidUnmapperKindError{Expected: "bool", Kind: v.Kind().String()}
+	if fval, ok := data.Value.(bool); ok {
+		v.SetBool(fval)
+		return nil
+	}
+
+	return &InvalidValueError{
+		Value: data.Value,
+		Kind:  data.Kind,
+	}
+}
+
+//nolint:dupl // false positive!
+func (vu *valueUnmapper) fromIntValue(data *Value, v reflect.Value) error {
+	switch v.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		switch vv := data.Value.(type) {
+		case int:
+			if !v.OverflowInt(int64(vv)) {
+				v.SetInt(int64(vv))
+				return nil
+			}
+		case int8:
+			if !v.OverflowInt(int64(vv)) {
+				v.SetInt(int64(vv))
+				return nil
+			}
+		case int16:
+			if !v.OverflowInt(int64(vv)) {
+				v.SetInt(int64(vv))
+				return nil
+			}
+		case int32:
+			if !v.OverflowInt(int64(vv)) {
+				v.SetInt(int64(vv))
+				return nil
+			}
+		case int64:
+			if !v.OverflowInt(vv) {
+				v.SetInt(vv)
+				return nil
+			}
 		}
-
-		if fval, ok := data.Value.(bool); ok {
-			v.SetBool(fval)
-			return
-		}
-
 		return &InvalidValueError{
 			Value: data.Value,
 			Kind:  data.Kind,
 		}
-	case "int", "int8", "int16", "int32", "int64":
-		switch v.Kind() {
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			switch vv := data.Value.(type) {
-			case int:
-				if !v.OverflowInt(int64(vv)) {
-					v.SetInt(int64(vv))
-					return
-				}
-			case int8:
-				if !v.OverflowInt(int64(vv)) {
-					v.SetInt(int64(vv))
-					return
-				}
-			case int16:
-				if !v.OverflowInt(int64(vv)) {
-					v.SetInt(int64(vv))
-					return
-				}
-			case int32:
-				if !v.OverflowInt(int64(vv)) {
-					v.SetInt(int64(vv))
-					return
-				}
-			case int64:
-				if !v.OverflowInt(vv) {
-					v.SetInt(vv)
-					return
-				}
-			}
-			return &InvalidValueError{
-				Value: data.Value,
-				Kind:  data.Kind,
-			}
-		}
-		return &InvalidUnmapperKindError{Expected: "int|int8|int16|int32|int64", Kind: v.Kind().String()}
-	case "uint", "uint8", "uint16", "uint32", "uint64":
-		switch v.Kind() {
-		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			switch vv := data.Value.(type) {
-			case uint:
-				if !v.OverflowUint(uint64(vv)) {
-					v.SetUint(uint64(vv))
-					return
-				}
-			case uint8:
-				if !v.OverflowUint(uint64(vv)) {
-					v.SetUint(uint64(vv))
-					return
-				}
-			case uint16:
-				if !v.OverflowUint(uint64(vv)) {
-					v.SetUint(uint64(vv))
-					return
-				}
-			case uint32:
-				if !v.OverflowUint(uint64(vv)) {
-					v.SetUint(uint64(vv))
-					return
-				}
-			case uint64:
-				if !v.OverflowUint(vv) {
-					v.SetUint(vv)
-					return
-				}
-			}
-			return &InvalidValueError{
-				Value: data.Value,
-				Kind:  data.Kind,
-			}
-		}
-		return &InvalidUnmapperKindError{Expected: "uint|uint8|uint16|uint32|uint64", Kind: v.Kind().String()}
-	case "float32", "float64":
-		switch v.Kind() {
-		case reflect.Float32, reflect.Float64:
-			switch vv := data.Value.(type) {
-			case float32:
-				if !v.OverflowFloat(float64(vv)) {
-					v.SetFloat(float64(vv))
-					return
-				}
-			case float64:
-				if !v.OverflowFloat(vv) {
-					v.SetFloat(vv)
-					return
-				}
-			}
-			return &InvalidValueError{
-				Value: data.Value,
-				Kind:  data.Kind,
-			}
-		}
-		return &InvalidUnmapperKindError{Expected: "float32|float64", Kind: v.Kind().String()}
-	case /*"array", */ "slice": // TODO: how to deal with array?
-		if data.Value == nil {
-			return
-		}
-		var sl reflect.Value
-		mi, ok := data.Value.([]interface{})
-		if ok {
-			sl = reflect.MakeSlice(v.Type(), len(mi), len(mi))
-		}
-		mv, ok := data.Value.([]*Value)
-		if ok {
-			sl = reflect.MakeSlice(v.Type(), len(mv), len(mv))
-		}
-		if mi == nil && mv == nil {
-			return &InvalidValueError{Value: data.Value, Kind: data.Kind}
-		}
+	}
+	return &InvalidUnmapperKindError{Expected: "int|int8|int16|int32|int64", Kind: v.Kind().String()}
+}
 
-		v.Set(sl)
-		for i := 0; i < v.Len(); i++ {
-			var x *Value
-			el := v.Index(i)
-			if mv != nil {
-				x = mv[i]
-			} else {
-				x = mi[i].(*Value)
+//nolint:dupl // false positive!
+func (vu *valueUnmapper) fromUintValue(data *Value, v reflect.Value) error {
+	switch v.Kind() {
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		switch vv := data.Value.(type) {
+		case uint:
+			if !v.OverflowUint(uint64(vv)) {
+				v.SetUint(uint64(vv))
+				return nil
 			}
-			err = vu.fromValue(x, el)
-			if err != nil {
-				return
+		case uint8:
+			if !v.OverflowUint(uint64(vv)) {
+				v.SetUint(uint64(vv))
+				return nil
+			}
+		case uint16:
+			if !v.OverflowUint(uint64(vv)) {
+				v.SetUint(uint64(vv))
+				return nil
+			}
+		case uint32:
+			if !v.OverflowUint(uint64(vv)) {
+				v.SetUint(uint64(vv))
+				return nil
+			}
+		case uint64:
+			if !v.OverflowUint(vv) {
+				v.SetUint(vv)
+				return nil
 			}
 		}
-	case "map":
-		if data.Value == nil {
-			return
-		}
-		if v.Kind() != reflect.Map {
-			return &InvalidUnmapperKindError{Expected: "map", Kind: v.Kind().String()}
-		}
-		var keys []reflect.Value
-		mi, ok := data.Value.(map[string]interface{})
-		if ok {
-			rm := reflect.ValueOf(mi)
-			keys = rm.MapKeys()
-		}
-		mv, ok := data.Value.(map[string]*Value)
-		if ok {
-			rm := reflect.ValueOf(mv)
-			keys = rm.MapKeys()
-		}
-		if mi == nil && mv == nil {
-			return &InvalidValueError{Value: data.Value, Kind: data.Kind}
-		}
-		v.Set(reflect.MakeMap(v.Type()))
-		for _, key := range keys {
-			var x *Value
-			if mv != nil {
-				x = mv[key.String()]
-			} else {
-				x = mi[key.String()].(*Value)
-			}
-			f := reflect.New(v.Type().Elem()).Elem()
-			err = vu.fromValue(x, f)
-			if err != nil {
-				return
-			}
-			fmt.Println(key, f)
-			v.SetMapIndex(key, f)
-			fmt.Println(v)
-		}
-	case "ptr":
-		if data.Value == nil {
-			return
-		}
-
-		el := v.Elem()
-		if !el.IsValid() {
-			t := v.Type()
-			telm := t.Elem()
-			elm := reflect.New(telm)
-			v.Set(elm)
-			el = v.Elem()
-		}
-		x := data.Value.(*Value)
-		err = vu.fromValue(x, el)
-		if err != nil {
-			return
-		}
-	case "string":
-		if v.Kind() != reflect.String {
-			return &InvalidUnmapperKindError{Expected: "string", Kind: v.Kind().String()}
-		}
-
-		if fval, ok := data.Value.(string); ok {
-			v.SetString(fval)
-			return
-		}
-
 		return &InvalidValueError{
 			Value: data.Value,
 			Kind:  data.Kind,
 		}
-	case "struct":
-		if v.Kind() == reflect.Interface {
-			v = v.Elem()
-		}
-		if v.Kind() != reflect.Struct {
-			return &InvalidUnmapperKindError{Expected: "struct", Kind: v.Kind().String()}
-		}
-		var keys []reflect.Value
-		mi, ok := data.Value.(map[string]interface{})
-		if ok {
-			rm := reflect.ValueOf(mi)
-			keys = rm.MapKeys()
-		}
-		mv, ok := data.Value.(map[string]*Value)
-		if ok {
-			rm := reflect.ValueOf(mv)
-			keys = rm.MapKeys()
-		}
-		if mi == nil && mv == nil {
-			return &InvalidValueError{Value: data.Value, Kind: data.Kind}
-		}
+	}
+	return &InvalidUnmapperKindError{Expected: "uint|uint8|uint16|uint32|uint64", Kind: v.Kind().String()}
+}
 
-		for _, key := range keys {
-			tagName := key.String()
-			keyName := vu.fieldByTag(v.Type(), tagName)
-			if keyName == "" {
-				keyName = tagName
+func (vu *valueUnmapper) fromFloatValue(data *Value, v reflect.Value) error {
+	switch v.Kind() {
+	case reflect.Float32, reflect.Float64:
+		switch vv := data.Value.(type) {
+		case float32:
+			if !v.OverflowFloat(float64(vv)) {
+				v.SetFloat(float64(vv))
+				return nil
 			}
-			f := v.FieldByName(keyName)
-			var x *Value
-			if mv != nil {
-				x = mv[tagName]
-			} else {
-				x = mi[tagName].(*Value)
-			}
-			if f.IsValid() {
-				err = vu.fromValue(x, f)
-				if err != nil {
-					return err
-				}
+		case float64:
+			if !v.OverflowFloat(vv) {
+				v.SetFloat(vv)
+				return nil
 			}
 		}
-	case "ref":
-		ref := data.Value.(*Reference)
-		if refv, ok := vu.refs[ref.Refid]; ok {
-			v.Set(refv)
-			return
+		return &InvalidValueError{
+			Value: data.Value,
+			Kind:  data.Kind,
 		}
-		err = vu.fromValue(ref.Value, v)
+	}
+	return &InvalidUnmapperKindError{Expected: "float32|float64", Kind: v.Kind().String()}
+}
+
+func (vu *valueUnmapper) fromSliceValue(data *Value, v reflect.Value) error {
+	if data.Value == nil {
+		return nil
+	}
+	var sl reflect.Value
+	mi, ok := data.Value.([]interface{})
+	if ok {
+		sl = reflect.MakeSlice(v.Type(), len(mi), len(mi))
+	}
+	mv, ok := data.Value.([]*Value)
+	if ok {
+		sl = reflect.MakeSlice(v.Type(), len(mv), len(mv))
+	}
+	if mi == nil && mv == nil {
+		return &InvalidValueError{Value: data.Value, Kind: data.Kind}
+	}
+
+	v.Set(sl)
+	for i := 0; i < v.Len(); i++ {
+		var x *Value
+		el := v.Index(i)
+		if mv != nil {
+			x = mv[i]
+		} else {
+			x = mi[i].(*Value)
+		}
+		err := vu.fromValue(x, el)
 		if err != nil {
-			return err
+			return nil
 		}
 	}
 
-	return
+	return nil
+}
+
+func (vu *valueUnmapper) fromMapValue(data *Value, v reflect.Value) error {
+	if data.Value == nil {
+		return nil
+	}
+	if v.Kind() != reflect.Map {
+		return &InvalidUnmapperKindError{Expected: Map, Kind: v.Kind().String()}
+	}
+	var keys []reflect.Value
+	mi, ok := data.Value.(map[string]interface{})
+	if ok {
+		rm := reflect.ValueOf(mi)
+		keys = rm.MapKeys()
+	}
+	mv, ok := data.Value.(map[string]*Value)
+	if ok {
+		rm := reflect.ValueOf(mv)
+		keys = rm.MapKeys()
+	}
+	if mi == nil && mv == nil {
+		return &InvalidValueError{Value: data.Value, Kind: data.Kind}
+	}
+	v.Set(reflect.MakeMap(v.Type()))
+	for _, key := range keys {
+		var x *Value
+		if mv != nil {
+			x = mv[key.String()]
+		} else {
+			x = mi[key.String()].(*Value)
+		}
+		f := reflect.New(v.Type().Elem()).Elem()
+		err := vu.fromValue(x, f)
+		if err != nil {
+			return nil
+		}
+		fmt.Println(key, f)
+		v.SetMapIndex(key, f)
+		fmt.Println(v)
+	}
+
+	return nil
+}
+
+func (vu *valueUnmapper) fromPtrValue(data *Value, v reflect.Value) error {
+	if data.Value == nil {
+		return nil
+	}
+
+	el := v.Elem()
+	if !el.IsValid() {
+		t := v.Type()
+		telm := t.Elem()
+		elm := reflect.New(telm)
+		v.Set(elm)
+		el = v.Elem()
+	}
+	x := data.Value.(*Value)
+	err := vu.fromValue(x, el)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (vu *valueUnmapper) fromStringValue(data *Value, v reflect.Value) error {
+	if v.Kind() != reflect.String {
+		return &InvalidUnmapperKindError{Expected: String, Kind: v.Kind().String()}
+	}
+
+	if fval, ok := data.Value.(string); ok {
+		v.SetString(fval)
+		return nil
+	}
+
+	return &InvalidValueError{
+		Value: data.Value,
+		Kind:  data.Kind,
+	}
+}
+
+func (vu *valueUnmapper) fromStructValue(data *Value, v reflect.Value) error {
+	if v.Kind() == reflect.Interface {
+		v = v.Elem()
+	}
+	if v.Kind() != reflect.Struct {
+		return &InvalidUnmapperKindError{Expected: Struct, Kind: v.Kind().String()}
+	}
+	var keys []reflect.Value
+	mi, ok := data.Value.(map[string]interface{})
+	if ok {
+		rm := reflect.ValueOf(mi)
+		keys = rm.MapKeys()
+	}
+	mv, ok := data.Value.(map[string]*Value)
+	if ok {
+		rm := reflect.ValueOf(mv)
+		keys = rm.MapKeys()
+	}
+	if mi == nil && mv == nil {
+		return &InvalidValueError{Value: data.Value, Kind: data.Kind}
+	}
+
+	for _, key := range keys {
+		tagName := key.String()
+		keyName := vu.fieldByTag(v.Type(), tagName)
+		if keyName == "" {
+			keyName = tagName
+		}
+		f := v.FieldByName(keyName)
+		var x *Value
+		if mv != nil {
+			x = mv[tagName]
+		} else {
+			x = mi[tagName].(*Value)
+		}
+		if f.IsValid() {
+			err := vu.fromValue(x, f)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (vu *valueUnmapper) fromRefValue(data *Value, v reflect.Value) error {
+	ref := data.Value.(*Reference)
+	if refv, ok := vu.refs[ref.Refid]; ok {
+		v.Set(refv)
+		return nil
+	}
+	err := vu.fromValue(ref.Value, v)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// fills v with the values from data
+func (vu *valueUnmapper) fromValue(data *Value, v reflect.Value) error {
+	vu.refs[data.Refid] = v
+
+	switch data.Kind {
+	case Bool:
+		return vu.fromBoolValue(data, v)
+	case Int, Int8, Int16, Int32, Int64:
+		return vu.fromIntValue(data, v)
+	case Uint, Uint8, Uint16, Uint32, Uint64:
+		return vu.fromUintValue(data, v)
+	case Float32, Float64:
+		return vu.fromFloatValue(data, v)
+	case /*Array, */ Slice: // TODO: how to deal with array?
+		return vu.fromSliceValue(data, v)
+	case Map:
+		return vu.fromMapValue(data, v)
+	case Ptr:
+		return vu.fromPtrValue(data, v)
+	case String:
+		return vu.fromStringValue(data, v)
+	case Struct:
+		return vu.fromStructValue(data, v)
+	case Ref:
+		return vu.fromRefValue(data, v)
+	}
+
+	return &InvalidUnmapperKindError{Kind: data.Kind}
 }
 
 func FromValue(data *Value, v interface{}) error {

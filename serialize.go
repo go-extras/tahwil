@@ -38,7 +38,7 @@ func (vm *valueMapper) saveRef(v reflect.Value) uint64 {
 }
 
 func (vm *valueMapper) nextRefid() uint64 {
-	vm.lastRefid += 1
+	vm.lastRefid++
 	return vm.lastRefid
 }
 
@@ -100,69 +100,65 @@ func (vm *valueMapper) toValueMap(v reflect.Value) (result map[string]*Value, er
 	return nil, &InvalidMapperKindError{Kind: kind.String()}
 }
 
-func (vm *valueMapper) toValue(v reflect.Value) (result *Value, err error) {
+func (vm *valueMapper) ptrToValue(v reflect.Value) (result *Value, err error) {
 	result = &Value{}
-	kind := v.Kind()
 
-	// special case for interface (internally interfaces act similarly to pointers,
-	// but we don't want to store them like pointers)
-	if kind == reflect.Interface {
-		v = v.Elem()
-		kind = v.Kind()
-	}
-
-	if kind == reflect.Chan || kind == reflect.Func ||
-		kind == reflect.Uintptr || kind == reflect.Array || kind == reflect.UnsafePointer {
-		return nil, &InvalidMapperKindError{Kind: kind.String()}
-	}
-
-	if kind == reflect.Ptr {
-		if refid, ok := vm.refs[v.Pointer()]; ok {
-			result.Refid = vm.nextRefid()
-			result.Kind = "ref"
-			result.Value = refid
-			return
-		}
-
-		result.Refid = vm.saveRef(v)
-		result.Kind = "ptr"
-
-		if v.IsNil() || v.Elem().Interface() == nil {
-			// nil values a final, no further elements
-			result.Value = nil
-			return
-		}
-
-		// recursively proceed to the pointer value
-		val, err := vm.toValue(v.Elem())
-		if err != nil {
-			return nil, err
-		}
-		result.Value = val
-		return result, err
-	}
-
-	if kind == reflect.Slice /*|| kind == reflect.Array*/ { // TODO: implement array?
+	if refid, ok := vm.refs[v.Pointer()]; ok {
 		result.Refid = vm.nextRefid()
-		result.Kind = kind.String()
-		result.Value, err = vm.toValueSlice(v)
-		if err != nil {
-			return nil, err
-		}
+		result.Kind = Ref
+		result.Value = refid
 		return
 	}
 
-	if kind == reflect.Map || kind == reflect.Struct {
-		result.Refid = vm.nextRefid()
-		result.Kind = kind.String()
-		// not only maps can be set here, but also slices as they
-		// can be represented as a map[fieldName]value
-		result.Value, err = vm.toValueMap(v)
-		if err != nil {
-			return nil, err
-		}
+	result.Refid = vm.saveRef(v)
+	result.Kind = Ptr
+
+	if v.IsNil() || v.Elem().Interface() == nil {
+		// nil values a final, no further elements
+		result.Value = nil
 		return
 	}
+
+	// recursively proceed to the pointer value
+	var val *Value
+	val, err = vm.toValue(v.Elem())
+	if err != nil {
+		return nil, err
+	}
+	result.Value = val
+	return result, err
+}
+
+func (vm *valueMapper) sliceToValue(v reflect.Value, kind reflect.Kind) (result *Value, err error) {
+	result = &Value{}
+
+	result.Refid = vm.nextRefid()
+	result.Kind = kind.String()
+	result.Value, err = vm.toValueSlice(v)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (vm *valueMapper) mapOrStructToValue(v reflect.Value, kind reflect.Kind) (result *Value, err error) {
+	result = &Value{}
+
+	result.Refid = vm.nextRefid()
+	result.Kind = kind.String()
+	// not only maps can be set here, but also slices as they
+	// can be represented as a map[fieldName]value
+	result.Value, err = vm.toValueMap(v)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (vm *valueMapper) scalarToValue(v reflect.Value) (result *Value, err error) {
+	result = &Value{}
 
 	// here we process the remaining kinds ("simple" ones)
 	result.Refid = vm.nextRefid()
@@ -172,7 +168,33 @@ func (vm *valueMapper) toValue(v reflect.Value) (result *Value, err error) {
 	}
 	result.Value = v.Interface()
 
-	return
+	return result, nil
+}
+
+func (vm *valueMapper) toValue(v reflect.Value) (result *Value, err error) {
+	kind := v.Kind()
+
+	// special case for interface (internally interfaces act similarly to pointers,
+	// but we don't want to store them like pointers)
+	if kind == reflect.Interface {
+		v = v.Elem()
+		kind = v.Kind()
+	}
+
+	switch kind {
+	case reflect.Chan, reflect.Func, reflect.Uintptr, reflect.Array, reflect.UnsafePointer:
+		return nil, &InvalidMapperKindError{Kind: kind.String()}
+	case reflect.Ptr:
+		return vm.ptrToValue(v)
+	// case reflect.Array: // TODO: implement array?
+	//	fallthrough
+	case reflect.Slice:
+		return vm.sliceToValue(v, kind)
+	case reflect.Struct, reflect.Map:
+		return vm.mapOrStructToValue(v, kind)
+	default:
+		return vm.scalarToValue(v)
+	}
 }
 
 // ToValue transforms i to *Value.

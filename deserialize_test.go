@@ -1,8 +1,10 @@
-package tahwil
+package tahwil_test
 
 import (
 	"reflect"
 	"testing"
+
+	. "github.com/go-extras/tahwil"
 )
 
 type personT struct {
@@ -33,7 +35,7 @@ func fromValueTests() []fromValueTest {
 
 	str := "xxx"
 	alltypes := &alltypesT{
-		String:  "string",
+		String:  String,
 		Slice:   []int{1, 2},
 		Map:     map[string]int{"1": 1, "2": 2},
 		Pointer: &str,
@@ -46,75 +48,75 @@ func fromValueTests() []fromValueTest {
 	result = append(result, fromValueTest{
 		in: &Value{
 			Refid: 1,
-			Kind:  "ptr",
+			Kind:  Ptr,
 			Value: &Value{
 				Refid: 2,
-				Kind:  "struct",
+				Kind:  Struct,
 				Value: map[string]*Value{
 					"String": {
 						Refid: 3,
-						Kind:  "string",
-						Value: "string",
+						Kind:  String,
+						Value: String,
 					},
 					"Slice": {
 						Refid: 4,
-						Kind:  "slice",
+						Kind:  Slice,
 						Value: []*Value{
 							{
 								Refid: 5,
-								Kind:  "int",
+								Kind:  Int,
 								Value: int64(1),
 							},
 							{
 								Refid: 6,
-								Kind:  "int",
+								Kind:  Int,
 								Value: int64(2),
 							},
 						},
 					},
 					"Map": {
 						Refid: 7,
-						Kind:  "map",
+						Kind:  Map,
 						Value: map[string]*Value{
 							"1": {
 								Refid: 8,
-								Kind:  "int",
+								Kind:  Int,
 								Value: int64(1),
 							},
 							"2": {
 								Refid: 9,
-								Kind:  "int",
+								Kind:  Int,
 								Value: int64(2),
 							},
 						},
 					},
 					"Pointer": {
 						Refid: 10,
-						Kind:  "ptr",
+						Kind:  Ptr,
 						Value: &Value{
 							Refid: 11,
-							Kind:  "string",
+							Kind:  String,
 							Value: "xxx",
 						},
 					},
 					"Bool": {
 						Refid: 12,
-						Kind:  "bool",
+						Kind:  Bool,
 						Value: true,
 					},
 					"Float": {
 						Refid: 13,
-						Kind:  "float64",
+						Kind:  Float64,
 						Value: 42.42,
 					},
 					"Int": {
 						Refid: 14,
-						Kind:  "int",
+						Kind:  Int,
 						Value: int64(42),
 					},
 					"Uint": {
 						Refid: 15,
-						Kind:  "uint",
+						Kind:  Uint,
 						Value: uint64(42),
 					},
 				},
@@ -138,49 +140,49 @@ func fromValueTests() []fromValueTest {
 	result = append(result, fromValueTest{
 		in: &Value{
 			Refid: 1,
-			Kind:  "ptr",
+			Kind:  Ptr,
 			Value: &Value{
 				Refid: 2,
-				Kind:  "struct",
+				Kind:  Struct,
 				Value: map[string]*Value{
 					"String": {
 						Refid: 3,
-						Kind:  "string",
+						Kind:  String,
 						Value: "",
 					},
 					"Slice": {
 						Refid: 4,
-						Kind:  "slice",
+						Kind:  Slice,
 						Value: nil,
 					},
 					"Map": {
 						Refid: 7,
-						Kind:  "map",
+						Kind:  Map,
 						Value: nil,
 					},
 					"Pointer": {
 						Refid: 10,
-						Kind:  "ptr",
+						Kind:  Ptr,
 						Value: nil,
 					},
 					"Bool": {
 						Refid: 12,
-						Kind:  "bool",
+						Kind:  Bool,
 						Value: false,
 					},
 					"Float": {
 						Refid: 13,
-						Kind:  "float64",
+						Kind:  Float64,
 						Value: 0.0,
 					},
-					"Int": {
+					Int: {
 						Refid: 14,
-						Kind:  "int",
+						Kind:  Int,
 						Value: int64(0),
 					},
-					"Uint": {
+					Uint: {
 						Refid: 15,
-						Kind:  "uint",
+						Kind:  Uint,
 						Value: uint64(0),
 					},
 				},
@@ -192,24 +194,24 @@ func fromValueTests() []fromValueTest {
 	result = append(result, fromValueTest{
 		in: &Value{
 			Refid: 1,
-			Kind:  "ptr",
+			Kind:  Ptr,
 			Value: &Value{
 				Refid: 2,
-				Kind:  "struct",
+				Kind:  Struct,
 				Value: map[string]*Value{
 					"name": {
 						Refid: 3,
-						Kind:  "string",
+						Kind:  String,
 						Value: "Martin",
 					},
 					"parent": {
 						Refid: 4,
-						Kind:  "ptr",
+						Kind:  Ptr,
 						Value: nil,
 					},
 					"children": {
 						Refid: 5,
-						Kind:  "slice",
+						Kind:  Slice,
 						Value: nil,
 					},
 				},
@@ -230,35 +232,35 @@ func fromValueTests() []fromValueTest {
 	result = append(result, fromValueTest{
 		in: &Value{
 			Refid: 1,
-			Kind:  "ptr",
+			Kind:  Ptr,
 			Value: &Value{
 				Refid: 2,
-				Kind:  "struct",
+				Kind:  Struct,
 				Value: map[string]*Value{
 					"name": {
 						Refid: 3,
-						Kind:  "string",
+						Kind:  String,
 						Value: "Martin",
 					},
 					"parent": {
 						Refid: 4,
-						Kind:  "ptr",
+						Kind:  Ptr,
 						Value: &Value{
 							Refid: 5,
-							Kind:  "struct",
+							Kind:  Struct,
 							Value: map[string]*Value{
 								"name": {
 									Refid: 6,
-									Kind:  "string",
+									Kind:  String,
 									Value: "Kevin",
 								},
 								"children": {
 									Refid: 7,
-									Kind:  "slice",
+									Kind:  Slice,
 									Value: []*Value{
 										{
 											Refid: 8,
-											Kind:  "ref",
+											Kind:  Ref,
 											Value: uint64(1),
 										},
 									},
@@ -276,10 +278,10 @@ func fromValueTests() []fromValueTest {
 	result = append(result, fromValueTest{
 		in: &Value{
 			Refid: 1,
-			Kind:  "ptr",
+			Kind:  Ptr,
 			Value: &Value{
 				Refid: 2,
-				Kind:  "string",
+				Kind:  String,
 				Value: 0,
 			},
 		},
@@ -291,10 +293,10 @@ func fromValueTests() []fromValueTest {
 	result = append(result, fromValueTest{
 		in: &Value{
 			Refid: 1,
-			Kind:  "ptr",
+			Kind:  Ptr,
 			Value: &Value{
 				Refid: 2,
-				Kind:  "float64",
+				Kind:  Float64,
 				Value: "xxx",
 			},
 		},
@@ -306,10 +308,10 @@ func fromValueTests() []fromValueTest {
 	result = append(result, fromValueTest{
 		in: &Value{
 			Refid: 1,
-			Kind:  "ptr",
+			Kind:  Ptr,
 			Value: &Value{
 				Refid: 2,
-				Kind:  "string",
+				Kind:  String,
 				Value: 0,
 			},
 		},
@@ -321,10 +323,10 @@ func fromValueTests() []fromValueTest {
 	result = append(result, fromValueTest{
 		in: &Value{
 			Refid: 1,
-			Kind:  "ptr",
+			Kind:  Ptr,
 			Value: &Value{
 				Refid: 2,
-				Kind:  "string",
+				Kind:  String,
 				Value: struct{}{},
 			},
 		},

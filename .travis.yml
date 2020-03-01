@@ -18,3 +18,5 @@ before_script:
 script:
   - golangci-lint run       # run a bunch of code checkers/linters in parallel
   - go test -race ./... -v
+  - go run examples/decoding/main.go
+  - go run examples/encoding/main.go

@@ -14,16 +14,15 @@ This library lets you transform your cyclic graph to a tree and then serialize t
 package main
 
 import (
-	"errors"
-	"fmt"
 	"encoding/json"
+	"fmt"
 
 	"github.com/go-extras/tahwil"
 )
 
 type Person struct {
-	Name string
-	Parent *Person
+	Name     string
+	Parent   *Person
 	Children []*Person
 }
 
@@ -31,10 +30,10 @@ func main() {
 	parent := &Person{
 		Name: "Arthur",
 		Children: []*Person{
-			&Person{
+			{
 				Name: "Ford",
 			},
-			&Person{
+			{
 				Name: "Trillian",
 			},
 		},
@@ -49,9 +48,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(res) 
+	fmt.Println(string(res))
 }
-
 ```
 
 The output will be one-line equivalent of the following JSON:
@@ -142,6 +140,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/go-extras/tahwil"
 )
 
@@ -155,10 +154,10 @@ func prepareData() []byte {
 	parent := &Person{
 		Name: "Arthur",
 		Children: []*Person{
-			&Person{
+			{
 				Name: "Ford",
 			},
-			&Person{
+			{
 				Name: "Trillian",
 			},
 		},
@@ -219,7 +218,7 @@ As you can see, Arthur is displayed here 3 times - first as a main person, and t
 
 ### Supported types (kinds)
 
-We support the followin go built-in types (kinds):
+We support the following go built-in types (kinds):
 
 * string
 * bool
@@ -240,7 +239,7 @@ We support the followin go built-in types (kinds):
 * map
 * slice
 
-In addition `tahwil` adds `ref` type, which is used to refer to the cyclic reference and thus avoid endless recursion.
+In addition, `tahwil` adds a `ref` type, which is used to refer to the cyclic reference and thus avoid endless recursion.
 
 Structs, slices, maps and pointers must pointer to one of the supported types.
 
