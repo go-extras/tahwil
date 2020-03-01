@@ -511,7 +511,7 @@ func TestInvalidValueError_Error(t *testing.T) {
 		Value: "val",
 		Kind:  "invalid",
 	}
-	expected := "tahwil.Value: invalid value \"val\" for kind \"invalid\""
+	expected := "tahwil.Value: invalid value string(\"val\") for kind \"invalid\""
 	if err.Error() != expected {
 		t.Errorf("mismatch\nhave: %#+v\nwant: %#+v", err.Error(), expected)
 	}

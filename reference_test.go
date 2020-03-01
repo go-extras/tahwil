@@ -428,7 +428,11 @@ func resolverTests() []resolverTest {
 func TestResolver_Resolve(t *testing.T) {
 	for i, arg := range resolverTests() {
 		r := NewResolver(arg.in)
-		r.Resolve()
+		err := r.Resolve()
+		if err != nil {
+			t.Errorf("#%d: Resolver.Resolve() returned an error: %s", i, err.Error())
+			continue
+		}
 		hasUnresolved := r.HasUnresolved()
 		unresolvedRefs := r.Unresolved()
 		if hasUnresolved != arg.hasUnresolved {

@@ -75,21 +75,112 @@ func (vu *valueUnmapper) fromValue(data *Value, v reflect.Value) (err error) {
 	default:
 		return &InvalidUnmapperKindError{Kind: data.Kind}
 	case "bool":
+		if v.Kind() != reflect.Bool {
+			return &InvalidUnmapperKindError{Expected: "bool", Kind: v.Kind().String()}
+		}
+
 		if fval, ok := data.Value.(bool); ok {
 			v.SetBool(fval)
+			return
+		}
+
+		return &InvalidValueError{
+			Value: data.Value,
+			Kind:  data.Kind,
 		}
 	case "int", "int8", "int16", "int32", "int64":
-		if fval, ok := data.Value.(int64); ok && !v.OverflowInt(fval) {
-			v.SetInt(fval)
+		switch v.Kind() {
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			switch vv := data.Value.(type) {
+			case int:
+				if !v.OverflowInt(int64(vv)) {
+					v.SetInt(int64(vv))
+					return
+				}
+			case int8:
+				if !v.OverflowInt(int64(vv)) {
+					v.SetInt(int64(vv))
+					return
+				}
+			case int16:
+				if !v.OverflowInt(int64(vv)) {
+					v.SetInt(int64(vv))
+					return
+				}
+			case int32:
+				if !v.OverflowInt(int64(vv)) {
+					v.SetInt(int64(vv))
+					return
+				}
+			case int64:
+				if !v.OverflowInt(vv) {
+					v.SetInt(vv)
+					return
+				}
+			}
+			return &InvalidValueError{
+				Value: data.Value,
+				Kind:  data.Kind,
+			}
 		}
+		return &InvalidUnmapperKindError{Expected: "int|int8|int16|int32|int64", Kind: v.Kind().String()}
 	case "uint", "uint8", "uint16", "uint32", "uint64":
-		if fval, ok := data.Value.(uint64); ok && !v.OverflowUint(fval) {
-			v.SetUint(fval)
+		switch v.Kind() {
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			switch vv := data.Value.(type) {
+			case uint:
+				if !v.OverflowUint(uint64(vv)) {
+					v.SetUint(uint64(vv))
+					return
+				}
+			case uint8:
+				if !v.OverflowUint(uint64(vv)) {
+					v.SetUint(uint64(vv))
+					return
+				}
+			case uint16:
+				if !v.OverflowUint(uint64(vv)) {
+					v.SetUint(uint64(vv))
+					return
+				}
+			case uint32:
+				if !v.OverflowUint(uint64(vv)) {
+					v.SetUint(uint64(vv))
+					return
+				}
+			case uint64:
+				if !v.OverflowUint(vv) {
+					v.SetUint(vv)
+					return
+				}
+			}
+			return &InvalidValueError{
+				Value: data.Value,
+				Kind:  data.Kind,
+			}
 		}
+		return &InvalidUnmapperKindError{Expected: "uint|uint8|uint16|uint32|uint64", Kind: v.Kind().String()}
 	case "float32", "float64":
-		if fval, ok := data.Value.(float64); ok && !v.OverflowFloat(fval) {
-			v.SetFloat(fval)
+		switch v.Kind() {
+		case reflect.Float32, reflect.Float64:
+			switch vv := data.Value.(type) {
+			case float32:
+				if !v.OverflowFloat(float64(vv)) {
+					v.SetFloat(float64(vv))
+					return
+				}
+			case float64:
+				if !v.OverflowFloat(vv) {
+					v.SetFloat(vv)
+					return
+				}
+			}
+			return &InvalidValueError{
+				Value: data.Value,
+				Kind:  data.Kind,
+			}
 		}
+		return &InvalidUnmapperKindError{Expected: "float32|float64", Kind: v.Kind().String()}
 	case /*"array", */ "slice": // TODO: how to deal with array?
 		if data.Value == nil {
 			return
@@ -178,8 +269,18 @@ func (vu *valueUnmapper) fromValue(data *Value, v reflect.Value) (err error) {
 			return
 		}
 	case "string":
+		if v.Kind() != reflect.String {
+			return &InvalidUnmapperKindError{Expected: "string", Kind: v.Kind().String()}
+		}
+
 		if fval, ok := data.Value.(string); ok {
 			v.SetString(fval)
+			return
+		}
+
+		return &InvalidValueError{
+			Value: data.Value,
+			Kind:  data.Kind,
 		}
 	case "struct":
 		if v.Kind() == reflect.Interface {
@@ -246,7 +347,9 @@ func FromValue(data *Value, v interface{}) error {
 
 	resolver := NewResolver(data)
 	vu := newValueUnmapper()
-	resolver.Resolve()
+	if err := resolver.Resolve(); err != nil {
+		return &UnmapperError{text: err.Error()}
+	}
 	if resolver.HasUnresolved() {
 		return &UnmapperError{text: "can't resolve all refs, invalid input"}
 	}

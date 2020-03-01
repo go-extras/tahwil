@@ -25,6 +25,7 @@ type alltypesT struct {
 type fromValueTest struct {
 	in  *Value
 	out interface{}
+	err string
 }
 
 func fromValueTests() []fromValueTest {
@@ -41,6 +42,7 @@ func fromValueTests() []fromValueTest {
 		Int:     42,
 		Uint:    42,
 	}
+
 	result = append(result, fromValueTest{
 		in: &Value{
 			Refid: 1,
@@ -114,6 +116,72 @@ func fromValueTests() []fromValueTest {
 						Refid: 15,
 						Kind:  "uint",
 						Value: uint64(42),
+					},
+				},
+			},
+		},
+		out: alltypes,
+	})
+
+	// empty case
+	alltypes = &alltypesT{
+		String:  "",
+		Slice:   nil,
+		Map:     nil,
+		Pointer: nil,
+		Bool:    false,
+		Float:   0,
+		Int:     0,
+		Uint:    0,
+	}
+
+	result = append(result, fromValueTest{
+		in: &Value{
+			Refid: 1,
+			Kind:  "ptr",
+			Value: &Value{
+				Refid: 2,
+				Kind:  "struct",
+				Value: map[string]*Value{
+					"String": {
+						Refid: 3,
+						Kind:  "string",
+						Value: "",
+					},
+					"Slice": {
+						Refid: 4,
+						Kind:  "slice",
+						Value: nil,
+					},
+					"Map": {
+						Refid: 7,
+						Kind:  "map",
+						Value: nil,
+					},
+					"Pointer": {
+						Refid: 10,
+						Kind:  "ptr",
+						Value: nil,
+					},
+					"Bool": {
+						Refid: 12,
+						Kind:  "bool",
+						Value: false,
+					},
+					"Float": {
+						Refid: 13,
+						Kind:  "float64",
+						Value: 0.0,
+					},
+					"Int": {
+						Refid: 14,
+						Kind:  "int",
+						Value: int64(0),
+					},
+					"Uint": {
+						Refid: 15,
+						Kind:  "uint",
+						Value: uint64(0),
 					},
 				},
 			},
@@ -204,20 +272,83 @@ func fromValueTests() []fromValueTest {
 		out: p1,
 	})
 
+	str1 := "test"
+	result = append(result, fromValueTest{
+		in: &Value{
+			Refid: 1,
+			Kind:  "ptr",
+			Value: &Value{
+				Refid: 2,
+				Kind:  "string",
+				Value: 0,
+			},
+		},
+		out: &str1,
+		err: `tahwil.Value: invalid value int(0) for kind "string"`,
+	})
+
+	v1 := 0.0
+	result = append(result, fromValueTest{
+		in: &Value{
+			Refid: 1,
+			Kind:  "ptr",
+			Value: &Value{
+				Refid: 2,
+				Kind:  "float64",
+				Value: "xxx",
+			},
+		},
+		out: &v1,
+		err: `tahwil.Value: invalid value string("xxx") for kind "float64"`,
+	})
+
+	v2 := 0
+	result = append(result, fromValueTest{
+		in: &Value{
+			Refid: 1,
+			Kind:  "ptr",
+			Value: &Value{
+				Refid: 2,
+				Kind:  "string",
+				Value: 0,
+			},
+		},
+		out: &v2,
+		err: `tahwil.FromValue: unexpected kind (expected: string, got: int)`,
+	})
+
+	v3 := ""
+	result = append(result, fromValueTest{
+		in: &Value{
+			Refid: 1,
+			Kind:  "ptr",
+			Value: &Value{
+				Refid: 2,
+				Kind:  "string",
+				Value: struct{}{},
+			},
+		},
+		out: &v3,
+		err: `tahwil.Value: invalid value struct {}(struct {}{}) for kind "string"`,
+	})
+
 	return result
 }
 
 func TestFromValue(t *testing.T) {
 	for i, arg := range fromValueTests() {
 		p := reflect.New(reflect.TypeOf(arg.out).Elem()).Interface()
-		//at, ok := p.(*personT)
-		//fmt.Println(at, ok)
 		err := FromValue(arg.in, p)
 		if err != nil {
-			t.Fatalf("#%d: %#+v", i, err)
-		}
-		if !reflect.DeepEqual(p, arg.out) {
-			t.Errorf("#%d: mismatch\nhave: %#+v\nwant: %#+v", i, p, arg.out)
+			if err.Error() != arg.err {
+				t.Fatalf("#%d: unexpected error: %#+v (%s)", i, err, err)
+			}
+		} else if arg.err != "" {
+			t.Fatalf("#%d: expected error %q, but got nil", i, arg.err)
+		} else {
+			if !reflect.DeepEqual(p, arg.out) {
+				t.Errorf("#%d: mismatch\nhave: %#+v\nwant: %#+v", i, reflect.ValueOf(p).Elem(), reflect.ValueOf(arg.out).Elem())
+			}
 		}
 	}
 }

@@ -2,12 +2,28 @@ package tahwil
 
 import (
 	"fmt"
-	"reflect"
 )
 
 type Reference struct {
 	Refid uint64
 	Value *Value
+}
+
+type ResolverError struct {
+	Value *Value
+	Kind string
+	Type string
+}
+
+func (e *ResolverError) Error() string {
+	if e.Value == nil {
+		return fmt.Sprintf("tahwil.Resolver: nil *Value")
+	}
+	if e.Kind == "ref" && e.Value == e.Value.Value {
+		return "tahwil.Resolver: *Value == (*Value).Value"
+	}
+
+	return fmt.Sprintf("tahwil.Resolver: invalid *Value.Value type: Kind=%q, Type=T%q", e.Kind, e.Type)
 }
 
 type Resolver struct {
@@ -26,8 +42,8 @@ func NewResolver(data *Value) *Resolver {
 	}
 }
 
-func (r *Resolver) Resolve() {
-	r.resolve(r.data)
+func (r *Resolver) Resolve() error {
+	return r.resolve(r.data)
 }
 
 func (r *Resolver) HasUnresolved() bool {
@@ -42,63 +58,88 @@ func (r *Resolver) Unresolved() []uint64 {
 	return result
 }
 
-func (r *Resolver) resolve(v *Value) {
+func (r *Resolver) resolve(v *Value) error {
+	if v == nil {
+		return &ResolverError{Value: v}
+	}
 	r.resolvedRefs[v.Refid] = v
 	if ref, ok := r.unresolvedRefs[v.Refid]; ok {
 		ref.Value = v
+		// ok, we resolved it, remove it from the unresolved map
 		delete(r.unresolvedRefs, v.Refid)
 	}
 	switch v.Kind {
 	default:
+		return nil
 	case "ptr":
 		if v.Value == nil {
-			return
+			return nil
+		}
+		if v == v.Value {
+			return &ResolverError{
+				Value: v,
+				Kind: "ptr",
+			}
 		}
 		iv := v.Value.(*Value)
-		r.resolve(iv)
-	case "struct", "map":
-		if v.Value == nil {
-			return
-		}
-		if m, ok := v.Value.(map[string]interface{}); ok {
-			for _, mv := range m {
+		return r.resolve(iv)
+	case "struct", "map", "array", "slice":
+		switch val := v.Value.(type) {
+		case map[string]interface{}:
+			for _, mv := range val {
 				iv := mv.(*Value)
-				r.resolve(iv)
+				if err := r.resolve(iv); err != nil {
+					return err
+				}
 			}
-		} else if m, ok := v.Value.(map[string]*Value); ok {
-			for _, mv := range m {
+		case map[string]*Value:
+			for _, mv := range val {
 				iv := mv
-				r.resolve(iv)
+				if err := r.resolve(iv); err != nil {
+					return err
+				}
 			}
-		} else {
-			panic(fmt.Errorf("unexpected type: %#+v", reflect.TypeOf(v.Value)))
-		}
-	case /*"array", */ "slice":
-		if v.Value == nil {
-			return
-		}
-		if m, ok := v.Value.([]interface{}); ok {
-			for _, mv := range m {
+		case []interface{}:
+			for _, mv := range val {
 				iv := mv.(*Value)
-				r.resolve(iv)
+				if err := r.resolve(iv); err != nil {
+					return err
+				}
 			}
-		} else if m, ok := v.Value.([]*Value); ok {
-			for _, mv := range m {
+		case []*Value:
+			for _, mv := range val {
 				iv := mv
-				r.resolve(iv)
+				if err := r.resolve(iv); err != nil {
+					return err
+				}
 			}
-		} else {
-			panic(fmt.Errorf("unexpected type: %#+v", reflect.TypeOf(v.Value)))
+		default:
+			if v.Value == nil {
+				return nil
+			}
+
+			return &ResolverError{
+				Value: v,
+				Type: fmt.Sprintf("%T", val),
+				Kind: v.Kind,
+			}
 		}
 	case "ref":
-		refid := uint64(v.Value.(uint64))
+		refid, ok := v.Value.(uint64)
+		if !ok {
+			return &ResolverError{
+				Value: v,
+				Kind: "ref",
+				Type: "float64",
+			}
+		}
 		iv := r.resolvedRefs[refid]
 		if iv != nil {
 			v.Value = &Reference{
 				Refid: refid,
 				Value: iv,
 			}
-			return
+			return nil
 		}
 		ref := r.unresolvedRefs[refid]
 		if ref == nil {
@@ -109,5 +150,13 @@ func (r *Resolver) resolve(v *Value) {
 			r.unresolvedRefs[refid] = ref
 		}
 		v.Value = ref
+		if v == v.Value {
+			return &ResolverError{
+				Value: v,
+				Kind: "ref",
+			}
+		}
 	}
+
+	return nil
 }

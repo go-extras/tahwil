@@ -18,7 +18,7 @@ type InvalidValueError struct {
 }
 
 func (e *InvalidValueError) Error() string {
-	return fmt.Sprintf("tahwil.Value: invalid value %#v for kind %#v", e.Value, e.Kind)
+	return fmt.Sprintf("tahwil.Value: invalid value %T(%#v) for kind %#v", e.Value, e.Value, e.Kind)
 }
 
 type InvalidValueKindError struct {
