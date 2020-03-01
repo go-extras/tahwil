@@ -43,7 +43,7 @@ func (vm *valueMapper) nextRefid() uint64 {
 }
 
 func (vm *valueMapper) toValueSlice(v reflect.Value) (result []*Value, err error) {
-	result = make([]*Value, v.Len(), v.Len())
+	result = make([]*Value, v.Len())
 	for i := 0; i < v.Len(); i++ {
 		result[i], err = vm.toValue(v.Index(i))
 		if err != nil {

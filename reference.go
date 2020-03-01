@@ -36,7 +36,7 @@ func (r *Resolver) HasUnresolved() bool {
 
 func (r *Resolver) Unresolved() []uint64 {
 	result := make([]uint64, 0, len(r.unresolvedRefs))
-	for k, _ := range r.unresolvedRefs {
+	for k := range r.unresolvedRefs {
 		result = append(result, k)
 	}
 	return result

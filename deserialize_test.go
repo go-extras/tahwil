@@ -25,7 +25,6 @@ type alltypesT struct {
 type fromValueTest struct {
 	in  *Value
 	out interface{}
-	err error
 }
 
 func fromValueTests() []fromValueTest {
