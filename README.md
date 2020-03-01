@@ -1,7 +1,7 @@
 # tahwil
 Cyclic graph structures serialization library written in go.
 
-<img src="https://travis-ci.org/go-extras/tahwil.svg?branch=master" />
+[<img src="https://travis-ci.org/go-extras/tahwil.svg?branch=master" />](https://travis-ci.org/go-extras/tahwil)
 
 ## How can it be useful?
 
