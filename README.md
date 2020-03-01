@@ -1,6 +1,8 @@
 # tahwil
 Cyclic graph structures serialization library written in go.
 
+<img src="https://travis-ci.org/go-extras/tahwil.svg?branch=master" />
+
 ## How can it be useful?
 
 Sometimes you need to serialize a structure that has circular references.
