@@ -4,12 +4,12 @@ import (
 	"reflect"
 	"testing"
 
-	. "github.com/go-extras/tahwil"
+	"github.com/go-extras/tahwil"
 )
 
 type resolverTest struct {
-	in             *Value
-	out            *Value
+	in             *tahwil.Value
+	out            *tahwil.Value
 	hasUnresolved  bool
 	unresolvedRefs []uint64
 }
@@ -18,21 +18,21 @@ func resolverTests() []resolverTest {
 	result := make([]resolverTest, 0)
 
 	result = append(result, resolverTest{
-		in: &Value{
+		in: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Bool,
+				Kind:  tahwil.Bool,
 				Value: true,
 			},
 		},
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Bool,
+				Kind:  tahwil.Bool,
 				Value: true,
 			},
 		},
@@ -41,24 +41,24 @@ func resolverTests() []resolverTest {
 	})
 
 	result = append(result, resolverTest{
-		in: &Value{
+		in: &tahwil.Value{
 			Refid: 1,
-			Kind:  Map,
+			Kind:  tahwil.Map,
 			Value: map[string]interface{}{
-				"test": &Value{
+				"test": &tahwil.Value{
 					Refid: 2,
-					Kind:  Bool,
+					Kind:  tahwil.Bool,
 					Value: true,
 				},
 			},
 		},
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Map,
+			Kind:  tahwil.Map,
 			Value: map[string]interface{}{
-				"test": &Value{
+				"test": &tahwil.Value{
 					Refid: 2,
-					Kind:  Bool,
+					Kind:  tahwil.Bool,
 					Value: true,
 				},
 			},
@@ -68,24 +68,24 @@ func resolverTests() []resolverTest {
 	})
 
 	result = append(result, resolverTest{
-		in: &Value{
+		in: &tahwil.Value{
 			Refid: 1,
-			Kind:  Slice,
+			Kind:  tahwil.Slice,
 			Value: []interface{}{
-				&Value{
+				&tahwil.Value{
 					Refid: 2,
-					Kind:  Bool,
+					Kind:  tahwil.Bool,
 					Value: true,
 				},
 			},
 		},
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Slice,
+			Kind:  tahwil.Slice,
 			Value: []interface{}{
-				&Value{
+				&tahwil.Value{
 					Refid: 2,
-					Kind:  Bool,
+					Kind:  tahwil.Bool,
 					Value: true,
 				},
 			},
@@ -95,40 +95,40 @@ func resolverTests() []resolverTest {
 	})
 
 	result = append(result, resolverTest{
-		in: &Value{
+		in: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
+			Kind:  tahwil.Ptr,
 			Value: nil,
 		},
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
+			Kind:  tahwil.Ptr,
 			Value: nil,
 		},
 		hasUnresolved:  false,
 		unresolvedRefs: []uint64{},
 	})
 
-	res1 := &Value{
+	res1 := &tahwil.Value{
 		Refid: 1,
-		Kind:  Ptr,
-		Value: &Value{
+		Kind:  tahwil.Ptr,
+		Value: &tahwil.Value{
 			Refid: 2,
-			Kind:  Ref,
+			Kind:  tahwil.Ref,
 			Value: true,
 		},
 	}
-	res1.Value.(*Value).Value = &Reference{
+	res1.Value.(*tahwil.Value).Value = &tahwil.Reference{
 		Refid: 1,
 		Value: res1,
 	}
 	result = append(result, resolverTest{
-		in: &Value{
+		in: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Ref,
+				Kind:  tahwil.Ref,
 				Value: uint64(1),
 			},
 		},
@@ -137,29 +137,29 @@ func resolverTests() []resolverTest {
 		unresolvedRefs: []uint64{},
 	})
 
-	res2 := &Value{
+	res2 := &tahwil.Value{
 		Refid: 1,
-		Kind:  Ptr,
-		Value: &Value{
+		Kind:  tahwil.Ptr,
+		Value: &tahwil.Value{
 			Refid: 2,
-			Kind:  Struct,
-			Value: map[string]*Value{
+			Kind:  tahwil.Struct,
+			Value: map[string]*tahwil.Value{
 				"Name": {
 					Refid: 3,
-					Kind:  Ptr,
-					Value: &Value{
+					Kind:  tahwil.Ptr,
+					Value: &tahwil.Value{
 						Refid: 4,
-						Kind:  String,
+						Kind:  tahwil.String,
 						Value: "Mike",
 					},
 				},
 				"Children": {
 					Refid: 5,
-					Kind:  Slice,
-					Value: []*Value{
+					Kind:  tahwil.Slice,
+					Value: []*tahwil.Value{
 						{
 							Refid: 6,
-							Kind:  Ref,
+							Kind:  tahwil.Ref,
 							Value: nil,
 						},
 					},
@@ -167,34 +167,34 @@ func resolverTests() []resolverTest {
 			},
 		},
 	}
-	res2.Value.(*Value).Value.(map[string]*Value)["Children"].Value.([]*Value)[0].Value = &Reference{
+	res2.Value.(*tahwil.Value).Value.(map[string]*tahwil.Value)["Children"].Value.([]*tahwil.Value)[0].Value = &tahwil.Reference{
 		Refid: 1,
 		Value: res2,
 	}
 	result = append(result, resolverTest{
-		in: &Value{
+		in: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Struct,
-				Value: map[string]*Value{
+				Kind:  tahwil.Struct,
+				Value: map[string]*tahwil.Value{
 					"Name": {
 						Refid: 3,
-						Kind:  Ptr,
-						Value: &Value{
+						Kind:  tahwil.Ptr,
+						Value: &tahwil.Value{
 							Refid: 4,
-							Kind:  String,
+							Kind:  tahwil.String,
 							Value: "Mike",
 						},
 					},
 					"Children": {
 						Refid: 5,
-						Kind:  Slice,
-						Value: []*Value{
+						Kind:  tahwil.Slice,
+						Value: []*tahwil.Value{
 							{
 								Refid: 6,
-								Kind:  Ref,
+								Kind:  tahwil.Ref,
 								Value: uint64(1),
 							},
 						},
@@ -208,29 +208,29 @@ func resolverTests() []resolverTest {
 	})
 
 	result = append(result, resolverTest{
-		in: &Value{
+		in: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Struct,
-				Value: map[string]*Value{
+				Kind:  tahwil.Struct,
+				Value: map[string]*tahwil.Value{
 					"Name": {
 						Refid: 3,
-						Kind:  Ptr,
-						Value: &Value{
+						Kind:  tahwil.Ptr,
+						Value: &tahwil.Value{
 							Refid: 4,
-							Kind:  String,
+							Kind:  tahwil.String,
 							Value: "Mike",
 						},
 					},
 					"Children": {
 						Refid: 5,
-						Kind:  Slice,
-						Value: []*Value{
+						Kind:  tahwil.Slice,
+						Value: []*tahwil.Value{
 							{
 								Refid: 6,
-								Kind:  Ref,
+								Kind:  tahwil.Ref,
 								Value: uint64(9),
 							},
 						},
@@ -242,64 +242,64 @@ func resolverTests() []resolverTest {
 		unresolvedRefs: []uint64{9},
 	})
 
-	res3 := &Value{
+	res3 := &tahwil.Value{
 		Refid: 1,
-		Kind:  Ptr,
-		Value: &Value{
+		Kind:  tahwil.Ptr,
+		Value: &tahwil.Value{
 			Refid: 2,
-			Kind:  Struct,
-			Value: map[string]*Value{
+			Kind:  tahwil.Struct,
+			Value: map[string]*tahwil.Value{
 				"Sibling": {
 					Refid: 3,
-					Kind:  Ref,
+					Kind:  tahwil.Ref,
 					Value: uint64(10),
 				},
 				"Name": {
 					Refid: 4,
-					Kind:  String,
+					Kind:  tahwil.String,
 					Value: "Mike",
 				},
 				"Parent": {
 					Refid: 5,
-					Kind:  Ptr,
-					Value: &Value{
+					Kind:  tahwil.Ptr,
+					Value: &tahwil.Value{
 						Refid: 6,
-						Kind:  Struct,
-						Value: map[string]*Value{
+						Kind:  tahwil.Struct,
+						Value: map[string]*tahwil.Value{
 							"Name": {
 								Refid: 7,
-								Kind:  String,
+								Kind:  tahwil.String,
 								Value: "Frank",
 							},
 							"Children": {
 								Refid: 8,
-								Kind:  Slice,
-								Value: []*Value{
+								Kind:  tahwil.Slice,
+								Value: []*tahwil.Value{
 									{
 										Refid: 9,
-										Kind:  Ref,
+										Kind:  tahwil.Ref,
 										Value: uint64(1),
 									},
 									{
 										Refid: 10,
-										Kind:  Ptr,
-										Value: &Value{
+										Kind:  tahwil.Ptr,
+										Value: &tahwil.Value{
 											Refid: 11,
-											Kind:  Struct,
-											Value: map[string]*Value{
+											Kind:  tahwil.Struct,
+											Value: map[string]*tahwil.Value{
 												"Name": {
 													Refid: 12,
-													Kind:  String,
+													Kind:  tahwil.String,
 													Value: "Zak",
 												},
 												"Sibling": {
 													Refid: 13,
-													Kind:  Ref,
+													Kind:  tahwil.Ref,
 													Value: uint64(1),
 												},
 												"Parent": {
 													Refid: 14,
-													Kind:  Ref,
+													Kind:  tahwil.Ref,
 													Value: uint64(5),
 												},
 											},
@@ -313,99 +313,99 @@ func resolverTests() []resolverTest {
 			},
 		},
 	}
-	res3.Value.(*Value).
-		Value.(map[string]*Value)["Parent"].
-		Value.(*Value).
-		Value.(map[string]*Value)["Children"].
-		Value.([]*Value)[0].
-		Value = &Reference{
+	res3.Value.(*tahwil.Value).
+		Value.(map[string]*tahwil.Value)["Parent"].
+		Value.(*tahwil.Value).
+		Value.(map[string]*tahwil.Value)["Children"].
+		Value.([]*tahwil.Value)[0].
+		Value = &tahwil.Reference{
 		Refid: 1,
 		Value: res3,
 	}
-	res3.Value.(*Value).
-		Value.(map[string]*Value)["Parent"].
-		Value.(*Value).
-		Value.(map[string]*Value)["Children"].
-		Value.([]*Value)[1].
-		Value.(*Value).
-		Value.(map[string]*Value)["Parent"].Value = &Reference{
+	res3.Value.(*tahwil.Value).
+		Value.(map[string]*tahwil.Value)["Parent"].
+		Value.(*tahwil.Value).
+		Value.(map[string]*tahwil.Value)["Children"].
+		Value.([]*tahwil.Value)[1].
+		Value.(*tahwil.Value).
+		Value.(map[string]*tahwil.Value)["Parent"].Value = &tahwil.Reference{
 		Refid: 5,
-		Value: res3.Value.(*Value).
-			Value.(map[string]*Value)["Parent"],
+		Value: res3.Value.(*tahwil.Value).
+			Value.(map[string]*tahwil.Value)["Parent"],
 	}
-	res3.Value.(*Value).Value.(map[string]*Value)["Parent"].
-		Value.(*Value).Value.(map[string]*Value)["Children"].Value.([]*Value)[1].
-		Value.(*Value).Value.(map[string]*Value)["Sibling"].Value = &Reference{
+	res3.Value.(*tahwil.Value).Value.(map[string]*tahwil.Value)["Parent"].
+		Value.(*tahwil.Value).Value.(map[string]*tahwil.Value)["Children"].Value.([]*tahwil.Value)[1].
+		Value.(*tahwil.Value).Value.(map[string]*tahwil.Value)["Sibling"].Value = &tahwil.Reference{
 		Refid: 1,
 		Value: res3,
 	}
-	res3.Value.(*Value).Value.(map[string]*Value)["Sibling"].Value = &Reference{
+	res3.Value.(*tahwil.Value).Value.(map[string]*tahwil.Value)["Sibling"].Value = &tahwil.Reference{
 		Refid: 10,
-		Value: res3.Value.(*Value).
-			Value.(map[string]*Value)["Parent"].
-			Value.(*Value).
-			Value.(map[string]*Value)["Children"].
-			Value.([]*Value)[1],
+		Value: res3.Value.(*tahwil.Value).
+			Value.(map[string]*tahwil.Value)["Parent"].
+			Value.(*tahwil.Value).
+			Value.(map[string]*tahwil.Value)["Children"].
+			Value.([]*tahwil.Value)[1],
 	}
 	result = append(result, resolverTest{
-		in: &Value{
+		in: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Struct,
-				Value: map[string]*Value{
+				Kind:  tahwil.Struct,
+				Value: map[string]*tahwil.Value{
 					"Sibling": {
 						Refid: 3,
-						Kind:  Ref,
+						Kind:  tahwil.Ref,
 						Value: uint64(10),
 					},
 					"Name": {
 						Refid: 4,
-						Kind:  String,
+						Kind:  tahwil.String,
 						Value: "Mike",
 					},
 					"Parent": {
 						Refid: 5,
-						Kind:  Ptr,
-						Value: &Value{
+						Kind:  tahwil.Ptr,
+						Value: &tahwil.Value{
 							Refid: 6,
-							Kind:  Struct,
-							Value: map[string]*Value{
+							Kind:  tahwil.Struct,
+							Value: map[string]*tahwil.Value{
 								"Name": {
 									Refid: 7,
-									Kind:  String,
+									Kind:  tahwil.String,
 									Value: "Frank",
 								},
 								"Children": {
 									Refid: 8,
-									Kind:  Slice,
-									Value: []*Value{
+									Kind:  tahwil.Slice,
+									Value: []*tahwil.Value{
 										{
 											Refid: 9,
-											Kind:  Ref,
+											Kind:  tahwil.Ref,
 											Value: uint64(1),
 										},
 										{
 											Refid: 10,
-											Kind:  Ptr,
-											Value: &Value{
+											Kind:  tahwil.Ptr,
+											Value: &tahwil.Value{
 												Refid: 11,
-												Kind:  Struct,
-												Value: map[string]*Value{
+												Kind:  tahwil.Struct,
+												Value: map[string]*tahwil.Value{
 													"Name": {
 														Refid: 12,
-														Kind:  String,
+														Kind:  tahwil.String,
 														Value: "Zak",
 													},
 													"Sibling": {
 														Refid: 13,
-														Kind:  Ref,
+														Kind:  tahwil.Ref,
 														Value: uint64(1),
 													},
 													"Parent": {
 														Refid: 14,
-														Kind:  Ref,
+														Kind:  tahwil.Ref,
 														Value: uint64(5),
 													},
 												},
@@ -429,7 +429,7 @@ func resolverTests() []resolverTest {
 
 func TestResolver_Resolve(t *testing.T) {
 	for i, arg := range resolverTests() {
-		r := NewResolver(arg.in)
+		r := tahwil.NewResolver(arg.in)
 		err := r.Resolve()
 		if err != nil {
 			t.Errorf("#%d: Resolver.Resolve() returned an error: %s", i, err.Error())

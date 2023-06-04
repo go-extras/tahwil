@@ -80,6 +80,7 @@ func fixSlice(kind string, v interface{}) (interface{}, error) {
 }
 
 // fixTypes recursively fixes field types after json.Unmarshal
+//
 //nolint:gocyclo // go lacks generics and as such there is no further way to optimize it
 func fixTypes(kind string, v interface{}) (res interface{}, err error) {
 	switch kind {
@@ -118,7 +119,7 @@ func fixTypes(kind string, v interface{}) (res interface{}, err error) {
 	}
 
 	if v == nil {
-		return v, nil
+		return nil, nil
 	}
 
 	return nil, &InvalidValueKindError{Kind: kind}

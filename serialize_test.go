@@ -6,7 +6,7 @@ import (
 	"testing"
 	"unsafe"
 
-	. "github.com/go-extras/tahwil"
+	"github.com/go-extras/tahwil"
 )
 
 type parentSerT struct {
@@ -32,7 +32,7 @@ type interfaceST struct {
 
 type valueTest struct {
 	in  interface{}
-	out *Value
+	out *tahwil.Value
 	err interface{}
 }
 
@@ -41,12 +41,12 @@ func valueTests() []valueTest {
 
 	result = append(result, valueTest{
 		in: true,
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Bool,
+				Kind:  tahwil.Bool,
 				Value: true,
 			},
 		},
@@ -54,21 +54,21 @@ func valueTests() []valueTest {
 
 	result = append(result, valueTest{
 		in: nil,
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
+			Kind:  tahwil.Ptr,
 			Value: nil,
 		},
 	})
 
 	result = append(result, valueTest{
 		in: "test",
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  String,
+				Kind:  tahwil.String,
 				Value: "test",
 			},
 		},
@@ -77,12 +77,12 @@ func valueTests() []valueTest {
 	s := "test"
 	result = append(result, valueTest{
 		in: &s,
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  String,
+				Kind:  tahwil.String,
 				Value: "test",
 			},
 		},
@@ -90,16 +90,16 @@ func valueTests() []valueTest {
 
 	result = append(result, valueTest{
 		in: &interfaceST{Value: "test"},
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Struct,
-				Value: map[string]*Value{
+				Kind:  tahwil.Struct,
+				Value: map[string]*tahwil.Value{
 					"Value": {
 						Refid: 3,
-						Kind:  String,
+						Kind:  tahwil.String,
 						Value: "test",
 					},
 				},
@@ -109,12 +109,12 @@ func valueTests() []valueTest {
 
 	result = append(result, valueTest{
 		in: interface{}("test"),
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  String,
+				Kind:  tahwil.String,
 				Value: "test",
 			},
 		},
@@ -122,60 +122,60 @@ func valueTests() []valueTest {
 
 	result = append(result, valueTest{
 		in: int(47),
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Int,
+				Kind:  tahwil.Int,
 				Value: int(47),
 			},
 		},
 	})
 	result = append(result, valueTest{
 		in: int8(47),
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Int8,
+				Kind:  tahwil.Int8,
 				Value: int8(47),
 			},
 		},
 	})
 	result = append(result, valueTest{
 		in: int16(47),
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Int16,
+				Kind:  tahwil.Int16,
 				Value: int16(47),
 			},
 		},
 	})
 	result = append(result, valueTest{
 		in: int32(47),
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Int32,
+				Kind:  tahwil.Int32,
 				Value: int32(47),
 			},
 		},
 	})
 	result = append(result, valueTest{
 		in: int64(47),
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Int64,
+				Kind:  tahwil.Int64,
 				Value: int64(47),
 			},
 		},
@@ -183,84 +183,84 @@ func valueTests() []valueTest {
 
 	result = append(result, valueTest{
 		in: uint(47),
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Uint,
+				Kind:  tahwil.Uint,
 				Value: uint(47),
 			},
 		},
 	})
 	result = append(result, valueTest{
 		in: uint8(47),
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Uint8,
+				Kind:  tahwil.Uint8,
 				Value: uint8(47),
 			},
 		},
 	})
 	result = append(result, valueTest{
 		in: byte(47),
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Uint8,
+				Kind:  tahwil.Uint8,
 				Value: uint8(47),
 			},
 		},
 	})
 	result = append(result, valueTest{
 		in: uint16(47),
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Uint16,
+				Kind:  tahwil.Uint16,
 				Value: uint16(47),
 			},
 		},
 	})
 	result = append(result, valueTest{
 		in: uint32(47),
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Uint32,
+				Kind:  tahwil.Uint32,
 				Value: uint32(47),
 			},
 		},
 	})
 	result = append(result, valueTest{
 		in: float32(47.47),
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Float32,
+				Kind:  tahwil.Float32,
 				Value: float32(47.47),
 			},
 		},
 	})
 	result = append(result, valueTest{
 		in: float64(47.47),
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Float64,
+				Kind:  tahwil.Float64,
 				Value: float64(47.47),
 			},
 		},
@@ -270,22 +270,22 @@ func valueTests() []valueTest {
 		in: &parentSerT{
 			Name: "Patrik",
 		},
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Struct,
-				Value: map[string]*Value{
+				Kind:  tahwil.Struct,
+				Value: map[string]*tahwil.Value{
 					"Name": {
 						Refid: 3,
-						Kind:  String,
+						Kind:  tahwil.String,
 						Value: "Patrik",
 					},
 					"Children": {
 						Refid: 4,
-						Kind:  Slice,
-						Value: []*Value{},
+						Kind:  tahwil.Slice,
+						Value: []*tahwil.Value{},
 					},
 				},
 			},
@@ -303,37 +303,37 @@ func valueTests() []valueTest {
 	p1.Children = append(p1.Children, c1)
 	result = append(result, valueTest{
 		in: p1,
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Struct,
-				Value: map[string]*Value{
+				Kind:  tahwil.Struct,
+				Value: map[string]*tahwil.Value{
 					"Name": {
 						Refid: 3,
-						Kind:  String,
+						Kind:  tahwil.String,
 						Value: "Patrik",
 					},
 					"Children": {
 						Refid: 4,
-						Kind:  Slice,
-						Value: []*Value{
+						Kind:  tahwil.Slice,
+						Value: []*tahwil.Value{
 							{
 								Refid: 5,
-								Kind:  Ptr,
-								Value: &Value{
+								Kind:  tahwil.Ptr,
+								Value: &tahwil.Value{
 									Refid: 6,
-									Kind:  Struct,
-									Value: map[string]*Value{
+									Kind:  tahwil.Struct,
+									Value: map[string]*tahwil.Value{
 										"Name": {
 											Refid: 7,
-											Kind:  String,
+											Kind:  tahwil.String,
 											Value: "Valentine",
 										},
 										"Parent": {
 											Refid: 8,
-											Kind:  Ref,
+											Kind:  tahwil.Ref,
 											Value: uint64(1),
 										},
 									},
@@ -352,21 +352,21 @@ func valueTests() []valueTest {
 	selfRef.Self = selfRef
 	result = append(result, valueTest{
 		in: selfRef,
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Struct,
-				Value: map[string]*Value{
+				Kind:  tahwil.Struct,
+				Value: map[string]*tahwil.Value{
 					"Name": {
 						Refid: 3,
-						Kind:  String,
+						Kind:  tahwil.String,
 						Value: "Klark",
 					},
 					"Self": {
 						Refid: 4,
-						Kind:  Ref,
+						Kind:  tahwil.Ref,
 						Value: uint64(1),
 					},
 				},
@@ -378,16 +378,16 @@ func valueTests() []valueTest {
 		in: map[string]interface{}{
 			"Id": uint64(1),
 		},
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
-			Kind:  Ptr,
-			Value: &Value{
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
 				Refid: 2,
-				Kind:  Map,
-				Value: map[string]*Value{
+				Kind:  tahwil.Map,
+				Value: map[string]*tahwil.Value{
 					"Id": {
 						Refid: 3,
-						Kind:  Uint64,
+						Kind:  tahwil.Uint64,
 						Value: uint64(1),
 					},
 				},
@@ -397,23 +397,23 @@ func valueTests() []valueTest {
 
 	result = append(result, valueTest{
 		in:  uintptr(1),
-		err: &InvalidMapperKindError{Kind: "uintptr"},
+		err: &tahwil.InvalidMapperKindError{Kind: "uintptr"},
 	})
 
 	result = append(result, valueTest{
 		in:  [4]int{1, 2, 3, 4},
-		err: &InvalidMapperKindError{Kind: Array},
+		err: &tahwil.InvalidMapperKindError{Kind: tahwil.Array},
 	})
 
 	result = append(result, valueTest{
 		in:  make(chan interface{}),
-		err: &InvalidMapperKindError{Kind: "chan"},
+		err: &tahwil.InvalidMapperKindError{Kind: "chan"},
 	})
 
 	dummy1 := true
 	result = append(result, valueTest{
 		in:  unsafe.Pointer(&dummy1),
-		err: &InvalidMapperKindError{Kind: "unsafe.Pointer"},
+		err: &tahwil.InvalidMapperKindError{Kind: "unsafe.Pointer"},
 	})
 
 	dummy2 := &interfaceST{
@@ -423,7 +423,7 @@ func valueTests() []valueTest {
 	}
 	result = append(result, valueTest{
 		in:  &dummy2,
-		err: &InvalidMapperKindError{Kind: "uintptr"},
+		err: &tahwil.InvalidMapperKindError{Kind: "uintptr"},
 	})
 
 	return result
@@ -431,7 +431,7 @@ func valueTests() []valueTest {
 
 func TestToValue(t *testing.T) {
 	for i, arg := range valueTests() {
-		v, err := ToValue(arg.in)
+		v, err := tahwil.ToValue(arg.in)
 		if err != nil {
 			if !reflect.DeepEqual(err, arg.err) {
 				t.Errorf("#%d: %#+v", i, err)
