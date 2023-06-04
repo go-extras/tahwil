@@ -71,7 +71,7 @@ func (vm *valueMapper) toValueMap(v reflect.Value) (result map[string]*Value, er
 				return nil, err
 			}
 		}
-		return
+		return result, nil
 	}
 
 	if kind == reflect.Struct {
@@ -94,7 +94,7 @@ func (vm *valueMapper) toValueMap(v reflect.Value) (result map[string]*Value, er
 				return nil, err
 			}
 		}
-		return
+		return result, nil
 	}
 
 	return nil, &InvalidMapperKindError{Kind: kind.String()}
