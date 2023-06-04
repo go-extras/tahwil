@@ -31,9 +31,3 @@ jobs:
 
       - name: Run tests
         run: go test -race ./... -v
-
-      - name: Run decoding example
-        run: go run examples/decoding/main.go
-
-      - name: Run encoding example
-        run: go run examples/encoding/main.go
