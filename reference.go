@@ -17,7 +17,7 @@ type ResolverError struct {
 
 func (e *ResolverError) Error() string {
 	if e.Value == nil {
-		return fmt.Sprintf("tahwil.Resolver: nil *Value")
+		return "tahwil.Resolver: nil *Value"
 	}
 	if e.Kind == Ref && e.Value == e.Value.Value {
 		return "tahwil.Resolver: *Value == (*Value).Value"
