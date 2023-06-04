@@ -189,7 +189,7 @@ func (vu *valueUnmapper) fromSliceValue(data *Value, v reflect.Value) error {
 		return nil
 	}
 	var sl reflect.Value
-	mi, ok := data.Value.([]interface{})
+	mi, ok := data.Value.([]any)
 	if ok {
 		sl = reflect.MakeSlice(v.Type(), len(mi), len(mi))
 	}
@@ -227,7 +227,7 @@ func (vu *valueUnmapper) fromMapValue(data *Value, v reflect.Value) error {
 		return &InvalidUnmapperKindError{Expected: Map, Kind: v.Kind().String()}
 	}
 	var keys []reflect.Value
-	mi, ok := data.Value.(map[string]interface{})
+	mi, ok := data.Value.(map[string]any)
 	if ok {
 		rm := reflect.ValueOf(mi)
 		keys = rm.MapKeys()
@@ -307,7 +307,7 @@ func (vu *valueUnmapper) fromStructValue(data *Value, v reflect.Value) error {
 		return &InvalidUnmapperKindError{Expected: Struct, Kind: v.Kind().String()}
 	}
 	var keys []reflect.Value
-	mi, ok := data.Value.(map[string]interface{})
+	mi, ok := data.Value.(map[string]any)
 	if ok {
 		rm := reflect.ValueOf(mi)
 		keys = rm.MapKeys()
@@ -389,7 +389,7 @@ func (vu *valueUnmapper) fromValue(data *Value, v reflect.Value) error {
 	return &InvalidUnmapperKindError{Kind: data.Kind}
 }
 
-func FromValue(data *Value, v interface{}) error {
+func FromValue(data *Value, v any) error {
 	rv := reflect.ValueOf(v)
 	if rv.Kind() != reflect.Ptr || rv.IsNil() {
 		return &UnmapperError{text: "value must be non-nil Pointer"}

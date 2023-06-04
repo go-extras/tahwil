@@ -226,7 +226,7 @@ func (vm *valueMapper) toValue(v reflect.Value) (result *Value, err error) {
 //     that will represent the original value (mapped to Value{})
 //
 // The result is *Value and an error, if there was a mapping error.
-func ToValue(i interface{}) (*Value, error) {
+func ToValue(i any) (*Value, error) {
 	v := reflect.ValueOf(i)
 	if v.Kind() != reflect.Ptr {
 		v = reflect.ValueOf(&i)

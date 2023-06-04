@@ -6,14 +6,14 @@ import (
 )
 
 type Value struct {
-	Refid uint64      `json:"refid"`
-	Kind  string      `json:"kind"`
-	Value interface{} `json:"value"`
+	Refid uint64 `json:"refid"`
+	Kind  string `json:"kind"`
+	Value any    `json:"value"`
 }
 
 // An InvalidValueError describes invalid Value state.
 type InvalidValueError struct {
-	Value interface{}
+	Value any
 	Kind  string
 }
 
@@ -29,8 +29,8 @@ func (e *InvalidValueKindError) Error() string {
 	return "tahwil.Value: invalid value kind \"" + e.Kind + "\""
 }
 
-func fixPtr(kind string, v interface{}) (interface{}, error) {
-	m, ok := v.(map[string]interface{})
+func fixPtr(kind string, v any) (any, error) {
+	m, ok := v.(map[string]any)
 	if !ok {
 		return nil, &InvalidValueError{Kind: kind, Value: v}
 	}
@@ -49,8 +49,8 @@ func fixPtr(kind string, v interface{}) (interface{}, error) {
 	return iv, nil
 }
 
-func fixStructOrMap(kind string, v interface{}) (interface{}, error) {
-	m, ok := v.(map[string]interface{})
+func fixStructOrMap(kind string, v any) (any, error) {
+	m, ok := v.(map[string]any)
 	if !ok {
 		return nil, &InvalidValueError{Kind: kind, Value: v}
 	}
@@ -64,8 +64,8 @@ func fixStructOrMap(kind string, v interface{}) (interface{}, error) {
 	return m, nil
 }
 
-func fixSlice(kind string, v interface{}) (interface{}, error) {
-	m, ok := v.([]interface{})
+func fixSlice(kind string, v any) (any, error) {
+	m, ok := v.([]any)
 	if !ok {
 		return nil, &InvalidValueError{Kind: kind, Value: v}
 	}
@@ -82,7 +82,7 @@ func fixSlice(kind string, v interface{}) (interface{}, error) {
 // fixTypes recursively fixes field types after json.Unmarshal
 //
 //nolint:gocyclo // go lacks generics and as such there is no further way to optimize it
-func fixTypes(kind string, v interface{}) (res interface{}, err error) {
+func fixTypes(kind string, v any) (res any, err error) {
 	switch kind {
 	case String, Bool:
 		return v, nil
@@ -133,9 +133,9 @@ func (v *Value) UnmarshalJSON(b []byte) error {
 	}
 
 	type valueT struct {
-		Refid uint64      `json:"refid"`
-		Kind  string      `json:"kind"`
-		Value interface{} `json:"value"`
+		Refid uint64 `json:"refid"`
+		Kind  string `json:"kind"`
+		Value any    `json:"value"`
 	}
 	innerV := &valueT{}
 	err := json.Unmarshal(b, innerV)

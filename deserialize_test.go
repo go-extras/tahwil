@@ -26,7 +26,7 @@ type alltypesT struct {
 
 type fromValueTest struct {
 	in  *tahwil.Value
-	out interface{}
+	out any
 	err string
 }
 

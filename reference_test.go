@@ -44,7 +44,7 @@ func resolverTests() []resolverTest {
 		in: &tahwil.Value{
 			Refid: 1,
 			Kind:  tahwil.Map,
-			Value: map[string]interface{}{
+			Value: map[string]any{
 				"test": &tahwil.Value{
 					Refid: 2,
 					Kind:  tahwil.Bool,
@@ -55,7 +55,7 @@ func resolverTests() []resolverTest {
 		out: &tahwil.Value{
 			Refid: 1,
 			Kind:  tahwil.Map,
-			Value: map[string]interface{}{
+			Value: map[string]any{
 				"test": &tahwil.Value{
 					Refid: 2,
 					Kind:  tahwil.Bool,
@@ -71,7 +71,7 @@ func resolverTests() []resolverTest {
 		in: &tahwil.Value{
 			Refid: 1,
 			Kind:  tahwil.Slice,
-			Value: []interface{}{
+			Value: []any{
 				&tahwil.Value{
 					Refid: 2,
 					Kind:  tahwil.Bool,
@@ -82,7 +82,7 @@ func resolverTests() []resolverTest {
 		out: &tahwil.Value{
 			Refid: 1,
 			Kind:  tahwil.Slice,
-			Value: []interface{}{
+			Value: []any{
 				&tahwil.Value{
 					Refid: 2,
 					Kind:  tahwil.Bool,

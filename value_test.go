@@ -11,7 +11,7 @@ import (
 type unmarshalJSONTest struct {
 	in  string
 	out *Value
-	err interface{}
+	err any
 }
 
 func unmarshalJSONTests() []unmarshalJSONTest {
@@ -187,7 +187,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 		Value: &Value{
 			Refid: 2,
 			Kind:  Struct,
-			Value: map[string]interface{}{
+			Value: map[string]any{
 				"name": &Value{
 					Refid: 3,
 					Kind:  String,
@@ -196,7 +196,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 				"children": &Value{
 					Refid: 4,
 					Kind:  Slice,
-					Value: []interface{}{},
+					Value: []any{},
 				},
 			},
 		},
@@ -257,7 +257,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 		Value: &Value{
 			Refid: 2,
 			Kind:  Struct,
-			Value: map[string]interface{}{
+			Value: map[string]any{
 				"name": &Value{
 					Refid: 3,
 					Kind:  String,
@@ -271,14 +271,14 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 				"children": &Value{
 					Refid: 5,
 					Kind:  Slice,
-					Value: []interface{}{
+					Value: []any{
 						&Value{
 							Refid: 6,
 							Kind:  Ptr,
 							Value: &Value{
 								Refid: 7,
 								Kind:  Struct,
-								Value: map[string]interface{}{
+								Value: map[string]any{
 									"name": &Value{
 										Refid: 8,
 										Kind:  String,
@@ -292,7 +292,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 									"children": &Value{
 										Refid: 10,
 										Kind:  Slice,
-										Value: []interface{}{},
+										Value: []any{},
 									},
 								},
 							},

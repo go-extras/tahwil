@@ -25,15 +25,15 @@ type selfRefT struct {
 }
 
 type interfaceST struct {
-	Value        interface{}
+	Value        any
 	NoSerialize1 bool `json:"-"`
 	NoSerialize2 bool `json:"_"`
 }
 
 type valueTest struct {
-	in  interface{}
+	in  any
 	out *tahwil.Value
-	err interface{}
+	err any
 }
 
 func valueTests() []valueTest {
@@ -108,7 +108,7 @@ func valueTests() []valueTest {
 	})
 
 	result = append(result, valueTest{
-		in: interface{}("test"),
+		in: any("test"),
 		out: &tahwil.Value{
 			Refid: 1,
 			Kind:  tahwil.Ptr,
@@ -375,7 +375,7 @@ func valueTests() []valueTest {
 	})
 
 	result = append(result, valueTest{
-		in: map[string]interface{}{
+		in: map[string]any{
 			"Id": uint64(1),
 		},
 		out: &tahwil.Value{
@@ -406,7 +406,7 @@ func valueTests() []valueTest {
 	})
 
 	result = append(result, valueTest{
-		in:  make(chan interface{}),
+		in:  make(chan any),
 		err: &tahwil.InvalidMapperKindError{Kind: "chan"},
 	})
 
