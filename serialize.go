@@ -59,7 +59,7 @@ func (vm *valueMapper) toValueMap(v reflect.Value) (result map[string]*Value, er
 	if kind == reflect.Map {
 		keys := v.MapKeys()
 		if len(keys) == 0 {
-			return
+			return result, nil
 		}
 
 		for _, idx := range keys {
@@ -71,7 +71,7 @@ func (vm *valueMapper) toValueMap(v reflect.Value) (result map[string]*Value, er
 				return nil, err
 			}
 		}
-		return
+		return result, nil
 	}
 
 	if kind == reflect.Struct {
@@ -94,7 +94,7 @@ func (vm *valueMapper) toValueMap(v reflect.Value) (result map[string]*Value, er
 				return nil, err
 			}
 		}
-		return
+		return result, nil
 	}
 
 	return nil, &InvalidMapperKindError{Kind: kind.String()}
@@ -107,7 +107,7 @@ func (vm *valueMapper) ptrToValue(v reflect.Value) (result *Value, err error) {
 		result.Refid = vm.nextRefid()
 		result.Kind = Ref
 		result.Value = refid
-		return
+		return result, nil
 	}
 
 	result.Refid = vm.saveRef(v)
@@ -116,7 +116,7 @@ func (vm *valueMapper) ptrToValue(v reflect.Value) (result *Value, err error) {
 	if v.IsNil() || v.Elem().Interface() == nil {
 		// nil values a final, no further elements
 		result.Value = nil
-		return
+		return result, nil
 	}
 
 	// recursively proceed to the pointer value
@@ -199,33 +199,34 @@ func (vm *valueMapper) toValue(v reflect.Value) (result *Value, err error) {
 
 // ToValue transforms i to *Value.
 // NOTES:
-// - (*Value).Kind will be set to the reflected value kind (see reflect.Kind).
-// - each value will get its own (*Value).Refid that is a counter incremented
-//   with every next (underlying value).
-// - each "simple" type (int, string, bool) will be stored in (*Value).Value
-// - each type that holds other values inside (ptr, map, slice, struct) will
-//   produce a further *Value that will be stored in (*Value).Value.
-// - the transformation process will continue until all the non-simple types are processed.
-// - non-serializable types (func, chan) will lead to a mapping error.
-// - there are unsupported serializable types: array, complex[64,128], unsafe pointer.
-// - ptr type will produce *Value with an underlying value.
-// - nil ptr will result in (*Value).Value set to nil.
-// - each non-nil pointer Refid is stored in a Refid map. This map is used
-//   to break circular references (when transforming a pointer the Refid map is being checked,
-//   and if the pointer is already on the list, (*Value).Kind is set to a special "ref" type
-//   and (*Value).Value is set to the Refid of the previously transformed value).
-// - struct will produce *Value whose Value property will be set to the map
-//   of exported struct fields (keys will correspond to the field name or to the json tag value,
-//   values will be *Value, with the underlying values of the fields), if a field is
-//   exported but its json tag value is set to "_" or "-", it will be ignored.
-// - map will produce a map of *Value with the key names that correspond to the original
-//   map keys, and the values will be *Value, with corresponding map values transformed.
-// - slice will produce a slice of *Value in the same order like the original slice has
-// - i is expected to be a pointer, but if it's not, a pointer from it will be created,
-//   it means that even for "simple" types the resulting (*Value).Value will hold *Value
-//   that will represent the original value (mapped to Value{})
+//   - (*Value).Kind will be set to the reflected value kind (see reflect.Kind).
+//   - each value will get its own (*Value).Refid that is a counter incremented
+//     with every next (underlying value).
+//   - each "simple" type (int, string, bool) will be stored in (*Value).Value
+//   - each type that holds other values inside (ptr, map, slice, struct) will
+//     produce a further *Value that will be stored in (*Value).Value.
+//   - the transformation process will continue until all the non-simple types are processed.
+//   - non-serializable types (func, chan) will lead to a mapping error.
+//   - there are unsupported serializable types: array, complex[64,128], unsafe pointer.
+//   - ptr type will produce *Value with an underlying value.
+//   - nil ptr will result in (*Value).Value set to nil.
+//   - each non-nil pointer Refid is stored in a Refid map. This map is used
+//     to break circular references (when transforming a pointer the Refid map is being checked,
+//     and if the pointer is already on the list, (*Value).Kind is set to a special "ref" type
+//     and (*Value).Value is set to the Refid of the previously transformed value).
+//   - struct will produce *Value whose Value property will be set to the map
+//     of exported struct fields (keys will correspond to the field name or to the json tag value,
+//     values will be *Value, with the underlying values of the fields), if a field is
+//     exported but its json tag value is set to "_" or "-", it will be ignored.
+//   - map will produce a map of *Value with the key names that correspond to the original
+//     map keys, and the values will be *Value, with corresponding map values transformed.
+//   - slice will produce a slice of *Value in the same order like the original slice has
+//   - i is expected to be a pointer, but if it's not, a pointer from it will be created,
+//     it means that even for "simple" types the resulting (*Value).Value will hold *Value
+//     that will represent the original value (mapped to Value{})
+//
 // The result is *Value and an error, if there was a mapping error.
-func ToValue(i interface{}) (*Value, error) {
+func ToValue(i any) (*Value, error) {
 	v := reflect.ValueOf(i)
 	if v.Kind() != reflect.Ptr {
 		v = reflect.ValueOf(&i)

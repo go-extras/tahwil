@@ -1,4 +1,4 @@
-package main
+package tahwil_test
 
 import (
 	"encoding/json"
@@ -38,7 +38,7 @@ func prepareData() []byte {
 	return res
 }
 
-func main() {
+func ExampleFromValue() {
 	data := &tahwil.Value{}
 	res := prepareData()
 	err := json.Unmarshal(res, data)
@@ -53,12 +53,18 @@ func main() {
 	fmt.Printf(`Name: %s
 Children:
     - %s
-	-- parent name: %s
+    -- parent name: %s
     - %s
-	-- parent name: %s
+    -- parent name: %s
 `, person.Name,
 		person.Children[0].Name,
 		person.Children[0].Parent.Name,
 		person.Children[1].Name,
 		person.Children[1].Parent.Name)
+	// Output: Name: Arthur
+	//Children:
+	//     - Ford
+	//     -- parent name: Arthur
+	//     - Trillian
+	//     -- parent name: Arthur
 }

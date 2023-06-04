@@ -17,7 +17,7 @@ type ResolverError struct {
 
 func (e *ResolverError) Error() string {
 	if e.Value == nil {
-		return fmt.Sprintf("tahwil.Resolver: nil *Value")
+		return "tahwil.Resolver: nil *Value"
 	}
 	if e.Kind == Ref && e.Value == e.Value.Value {
 		return "tahwil.Resolver: *Value == (*Value).Value"
@@ -74,7 +74,7 @@ func (r *Resolver) resolvePtr(v *Value) error {
 
 func (r *Resolver) resolveWIthSubvalues(v *Value) error {
 	switch val := v.Value.(type) {
-	case map[string]interface{}:
+	case map[string]any:
 		for _, mv := range val {
 			iv := mv.(*Value)
 			if err := r.resolve(iv); err != nil {
@@ -88,7 +88,7 @@ func (r *Resolver) resolveWIthSubvalues(v *Value) error {
 				return err
 			}
 		}
-	case []interface{}:
+	case []any:
 		for _, mv := range val {
 			iv := mv.(*Value)
 			if err := r.resolve(iv); err != nil {
