@@ -66,7 +66,12 @@ func (vm *valueMapper) toValueMap(v reflect.Value) (result map[string]*Value, er
 		for _, idx := range keys {
 			i := idx.Interface()
 			val := v.MapIndex(idx)
-			resIdx := fmt.Sprintf("%v", i)
+			var resIdx string
+			if s, ok := i.(string); ok {
+				resIdx = s
+			} else {
+				resIdx = fmt.Sprintf("%v", i)
+			}
 			result[resIdx], err = vm.toValue(val)
 			if err != nil {
 				return nil, err
