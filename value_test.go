@@ -5,144 +5,144 @@ import (
 	"reflect"
 	"testing"
 
-	. "github.com/go-extras/tahwil"
+	"github.com/go-extras/tahwil"
 )
 
 type unmarshalJSONTest struct {
 	in  string
-	out *Value
+	out *tahwil.Value
 	err any
 }
 
 func unmarshalJSONTests() []unmarshalJSONTest {
 	res := make([]unmarshalJSONTest, 0)
 
-	res = append(res, unmarshalJSONTest{in: `null`, out: &Value{}})
-	res = append(res, unmarshalJSONTest{in: `{}`, out: &Value{}})
+	res = append(res, unmarshalJSONTest{in: `null`, out: &tahwil.Value{}})
+	res = append(res, unmarshalJSONTest{in: `{}`, out: &tahwil.Value{}})
 	res = append(res, unmarshalJSONTest{in: `{
 		"refid": 1,
 		"kind": "string",
 		"value": "aaa"
-}`, out: &Value{
+}`, out: &tahwil.Value{
 		Refid: 1,
-		Kind:  String,
+		Kind:  tahwil.String,
 		Value: "aaa",
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
 		"refid": 1,
 		"kind": "bool",
 		"value": true
-}`, out: &Value{
+}`, out: &tahwil.Value{
 		Refid: 1,
-		Kind:  Bool,
+		Kind:  tahwil.Bool,
 		Value: true,
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
 		"refid": 1,
 		"kind": "int",
 		"value": 1
-}`, out: &Value{
+}`, out: &tahwil.Value{
 		Refid: 1,
-		Kind:  Int,
+		Kind:  tahwil.Int,
 		Value: 1,
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
 		"refid": 1,
 		"kind": "int8",
 		"value": 1
-}`, out: &Value{
+}`, out: &tahwil.Value{
 		Refid: 1,
-		Kind:  Int8,
+		Kind:  tahwil.Int8,
 		Value: int8(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
 		"refid": 1,
 		"kind": "int16",
 		"value": 1
-}`, out: &Value{
+}`, out: &tahwil.Value{
 		Refid: 1,
-		Kind:  Int16,
+		Kind:  tahwil.Int16,
 		Value: int16(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
 		"refid": 1,
 		"kind": "int32",
 		"value": 1
-}`, out: &Value{
+}`, out: &tahwil.Value{
 		Refid: 1,
-		Kind:  Int32,
+		Kind:  tahwil.Int32,
 		Value: int32(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
 		"refid": 1,
 		"kind": "int64",
 		"value": 1
-}`, out: &Value{
+}`, out: &tahwil.Value{
 		Refid: 1,
-		Kind:  Int64,
+		Kind:  tahwil.Int64,
 		Value: int64(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
 		"refid": 1,
 		"kind": "uint",
 		"value": 1
-}`, out: &Value{
+}`, out: &tahwil.Value{
 		Refid: 1,
-		Kind:  Uint,
+		Kind:  tahwil.Uint,
 		Value: uint(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
 		"refid": 1,
 		"kind": "uint8",
 		"value": 1
-}`, out: &Value{
+}`, out: &tahwil.Value{
 		Refid: 1,
-		Kind:  Uint8,
+		Kind:  tahwil.Uint8,
 		Value: uint8(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
 		"refid": 1,
 		"kind": "uint16",
 		"value": 1
-}`, out: &Value{
+}`, out: &tahwil.Value{
 		Refid: 1,
-		Kind:  Uint16,
+		Kind:  tahwil.Uint16,
 		Value: uint16(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
 		"refid": 1,
 		"kind": "uint32",
 		"value": 1
-}`, out: &Value{
+}`, out: &tahwil.Value{
 		Refid: 1,
-		Kind:  Uint32,
+		Kind:  tahwil.Uint32,
 		Value: uint32(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
 		"refid": 1,
 		"kind": "uint64",
 		"value": 1
-}`, out: &Value{
+}`, out: &tahwil.Value{
 		Refid: 1,
-		Kind:  Uint64,
+		Kind:  tahwil.Uint64,
 		Value: uint64(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
 		"refid": 1,
 		"kind": "float32",
 		"value": 1
-}`, out: &Value{
+}`, out: &tahwil.Value{
 		Refid: 1,
-		Kind:  Float32,
+		Kind:  tahwil.Float32,
 		Value: float32(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
 		"refid": 1,
 		"kind": "float64",
 		"value": 1
-}`, out: &Value{
+}`, out: &tahwil.Value{
 		Refid: 1,
-		Kind:  Float64,
+		Kind:  tahwil.Float64,
 		Value: float64(1),
 	}})
 	res = append(res, unmarshalJSONTest{in: `{
@@ -153,12 +153,12 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 			"kind": "string",
 			"value": "test"
 		}
-}`, out: &Value{
+}`, out: &tahwil.Value{
 		Refid: 1,
-		Kind:  Ptr,
-		Value: &Value{
+		Kind:  tahwil.Ptr,
+		Value: &tahwil.Value{
 			Refid: 2,
-			Kind:  String,
+			Kind:  tahwil.String,
 			Value: "test",
 		},
 	}})
@@ -181,21 +181,21 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 				} 
 			}
 		}
-}`, out: &Value{
+}`, out: &tahwil.Value{
 		Refid: 1,
-		Kind:  Ptr,
-		Value: &Value{
+		Kind:  tahwil.Ptr,
+		Value: &tahwil.Value{
 			Refid: 2,
-			Kind:  Struct,
+			Kind:  tahwil.Struct,
 			Value: map[string]any{
-				"name": &Value{
+				"name": &tahwil.Value{
 					Refid: 3,
-					Kind:  String,
+					Kind:  tahwil.String,
 					Value: "Arthur",
 				},
-				"children": &Value{
+				"children": &tahwil.Value{
 					Refid: 4,
-					Kind:  Slice,
+					Kind:  tahwil.Slice,
 					Value: []any{},
 				},
 			},
@@ -251,47 +251,47 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 				} 
 			}
 		}
-}`, out: &Value{
+}`, out: &tahwil.Value{
 		Refid: 1,
-		Kind:  Ptr,
-		Value: &Value{
+		Kind:  tahwil.Ptr,
+		Value: &tahwil.Value{
 			Refid: 2,
-			Kind:  Struct,
+			Kind:  tahwil.Struct,
 			Value: map[string]any{
-				"name": &Value{
+				"name": &tahwil.Value{
 					Refid: 3,
-					Kind:  String,
+					Kind:  tahwil.String,
 					Value: "Arthur",
 				},
-				"parent": &Value{
+				"parent": &tahwil.Value{
 					Refid: 4,
-					Kind:  Ptr,
+					Kind:  tahwil.Ptr,
 					Value: nil,
 				},
-				"children": &Value{
+				"children": &tahwil.Value{
 					Refid: 5,
-					Kind:  Slice,
+					Kind:  tahwil.Slice,
 					Value: []any{
-						&Value{
+						&tahwil.Value{
 							Refid: 6,
-							Kind:  Ptr,
-							Value: &Value{
+							Kind:  tahwil.Ptr,
+							Value: &tahwil.Value{
 								Refid: 7,
-								Kind:  Struct,
+								Kind:  tahwil.Struct,
 								Value: map[string]any{
-									"name": &Value{
+									"name": &tahwil.Value{
 										Refid: 8,
-										Kind:  String,
+										Kind:  tahwil.String,
 										Value: "Trillian",
 									},
-									"parent": &Value{
+									"parent": &tahwil.Value{
 										Refid: 9,
-										Kind:  Ref,
+										Kind:  tahwil.Ref,
 										Value: 1,
 									},
-									"children": &Value{
+									"children": &tahwil.Value{
 										Refid: 10,
-										Kind:  Slice,
+										Kind:  tahwil.Slice,
 										Value: []any{},
 									},
 								},
@@ -308,12 +308,12 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 			"kind": "chan",
 			"value": "aaa"
 		}`,
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
 			Kind:  "chan",
 			Value: "aaa",
 		},
-		err: &InvalidValueKindError{Kind: "chan"},
+		err: &tahwil.InvalidValueKindError{Kind: "chan"},
 	})
 	res = append(res, unmarshalJSONTest{
 		in: `{
@@ -321,12 +321,12 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 			"kind": "dummy",
 			"value": "aaa"
 		}`,
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
 			Kind:  "chan",
 			Value: "aaa",
 		},
-		err: &InvalidValueKindError{Kind: "dummy"},
+		err: &tahwil.InvalidValueKindError{Kind: "dummy"},
 	})
 	res = append(res, unmarshalJSONTest{
 		in: `{
@@ -334,12 +334,12 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 			"kind": "complex64",
 			"value": "aaa"
 		}`,
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
 			Kind:  "complex64",
 			Value: "aaa",
 		},
-		err: &InvalidValueKindError{Kind: "complex64"},
+		err: &tahwil.InvalidValueKindError{Kind: "complex64"},
 	})
 	res = append(res, unmarshalJSONTest{
 		in: `{
@@ -347,12 +347,12 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 			"kind": "complex128",
 			"value": "aaa"
 		}`,
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
 			Kind:  "complex128",
 			Value: "aaa",
 		},
-		err: &InvalidValueKindError{Kind: "complex128"},
+		err: &tahwil.InvalidValueKindError{Kind: "complex128"},
 	})
 	res = append(res, unmarshalJSONTest{
 		in: `{
@@ -360,7 +360,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 			"kind": "uintptr",
 			"value": "aaa"
 		}`,
-		err: &InvalidValueKindError{Kind: "uintptr"},
+		err: &tahwil.InvalidValueKindError{Kind: "uintptr"},
 	})
 	res = append(res, unmarshalJSONTest{
 		in: `{
@@ -368,7 +368,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 			"kind": "byte",
 			"value": "aaa"
 		}`,
-		err: &InvalidValueKindError{Kind: "byte"},
+		err: &tahwil.InvalidValueKindError{Kind: "byte"},
 	})
 	res = append(res, unmarshalJSONTest{
 		in: `{
@@ -376,12 +376,12 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 			"kind": "rune",
 			"value": "aaa"
 		}`,
-		out: &Value{
+		out: &tahwil.Value{
 			Refid: 1,
 			Kind:  "rune",
 			Value: "aaa",
 		},
-		err: &InvalidValueKindError{Kind: "rune"},
+		err: &tahwil.InvalidValueKindError{Kind: "rune"},
 	})
 	res = append(res, unmarshalJSONTest{
 		in: `{
@@ -397,7 +397,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 			"kind": "ptr", 
 			"value": "invalid"
 		}`,
-		err: &InvalidValueError{Kind: Ptr, Value: "invalid"},
+		err: &tahwil.InvalidValueError{Kind: tahwil.Ptr, Value: "invalid"},
 	})
 	res = append(res, unmarshalJSONTest{
 		in: `{
@@ -409,7 +409,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 				"value": "invalid"
 			}
 		}`,
-		err: &InvalidValueError{Kind: Ptr, Value: "invalid"},
+		err: &tahwil.InvalidValueError{Kind: tahwil.Ptr, Value: "invalid"},
 	})
 	res = append(res, unmarshalJSONTest{
 		in: `{
@@ -417,7 +417,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 			"kind": "struct", 
 			"value": "invalid"
 		}`,
-		err: &InvalidValueError{Kind: Struct, Value: "invalid"},
+		err: &tahwil.InvalidValueError{Kind: tahwil.Struct, Value: "invalid"},
 	})
 	res = append(res, unmarshalJSONTest{
 		in: `{
@@ -431,7 +431,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 				}
 			}
 		}`,
-		err: &InvalidValueError{Kind: Struct, Value: "invalid"},
+		err: &tahwil.InvalidValueError{Kind: tahwil.Struct, Value: "invalid"},
 	})
 	res = append(res, unmarshalJSONTest{
 		in: `{
@@ -439,7 +439,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 			"kind": "map", 
 			"value": "invalid"
 		}`,
-		err: &InvalidValueError{Kind: Map, Value: "invalid"},
+		err: &tahwil.InvalidValueError{Kind: tahwil.Map, Value: "invalid"},
 	})
 	res = append(res, unmarshalJSONTest{
 		in: `{
@@ -453,7 +453,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 				}
 			}
 		}`,
-		err: &InvalidValueError{Kind: Map, Value: "invalid"},
+		err: &tahwil.InvalidValueError{Kind: tahwil.Map, Value: "invalid"},
 	})
 	res = append(res, unmarshalJSONTest{
 		in: `{
@@ -461,7 +461,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 			"kind": "slice", 
 			"value": "invalid"
 		}`,
-		err: &InvalidValueError{Kind: Slice, Value: "invalid"},
+		err: &tahwil.InvalidValueError{Kind: tahwil.Slice, Value: "invalid"},
 	})
 	res = append(res, unmarshalJSONTest{
 		in: `{
@@ -475,7 +475,7 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 				}
 			]
 		}`,
-		err: &InvalidValueError{Kind: Slice, Value: "invalid"},
+		err: &tahwil.InvalidValueError{Kind: tahwil.Slice, Value: "invalid"},
 	})
 
 	return res[0:len(res):len(res)]
@@ -483,8 +483,8 @@ func unmarshalJSONTests() []unmarshalJSONTest {
 
 func TestValue_UnmarshalJSON(t *testing.T) {
 	for i, arg := range unmarshalJSONTests() {
-		v := &Value{}
-		err := v.UnmarshalJSON([]byte(arg.in))
+		v := &tahwil.Value{}
+		err := json.Unmarshal([]byte(arg.in), v)
 		if err != nil {
 			if serr, ok := err.(*json.SyntaxError); ok {
 				if serr.Error() != arg.err {
@@ -501,7 +501,7 @@ func TestValue_UnmarshalJSON(t *testing.T) {
 }
 
 func TestInvalidValueKindError_Error(t *testing.T) {
-	err := &InvalidValueKindError{Kind: "invalid"}
+	err := &tahwil.InvalidValueKindError{Kind: "invalid"}
 	expected := "tahwil.Value: invalid value kind \"" + err.Kind + "\""
 	if err.Error() != expected {
 		t.Errorf("mismatch\nhave: %#+v\nwant: %#+v", err.Error(), expected)
@@ -509,7 +509,7 @@ func TestInvalidValueKindError_Error(t *testing.T) {
 }
 
 func TestInvalidValueError_Error(t *testing.T) {
-	err := &InvalidValueError{
+	err := &tahwil.InvalidValueError{
 		Value: "val",
 		Kind:  "invalid",
 	}
