@@ -3,6 +3,7 @@ package tahwil
 import (
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 // An InvalidMapperKindError describes an invalid argument passed to ToValue.
@@ -78,6 +79,9 @@ func (vm *valueMapper) toValueMap(v reflect.Value) (result map[string]*Value, er
 		for i := 0; i < v.NumField(); i++ {
 			ft := v.Type().Field(i)
 			k := ft.Tag.Get("json")
+			if k != "" {
+				k, _, _ = strings.Cut(k, ",")
+			}
 			if k == "" {
 				k = ft.Name
 			}

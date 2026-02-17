@@ -222,6 +222,31 @@ func fromValueTests() []fromValueTest {
 		},
 	})
 
+	// json tags with options like omitempty should use only the name part
+	result = append(result, fromValueTest{
+		in: &tahwil.Value{
+			Refid: 1,
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
+				Refid: 2,
+				Kind:  tahwil.Struct,
+				Value: map[string]*tahwil.Value{
+					"name": {
+						Refid: 3,
+						Kind:  tahwil.String,
+						Value: "test",
+					},
+					"value": {
+						Refid: 4,
+						Kind:  tahwil.Int,
+						Value: int64(42),
+					},
+				},
+			},
+		},
+		out: &omitemptyT{Name: "test", Value: 42},
+	})
+
 	p1 := &personT{
 		Name: "Martin",
 		Parent: &personT{
