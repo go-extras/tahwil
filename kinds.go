@@ -1,29 +1,32 @@
 package tahwil
 
+// Kind represents the type kind stored in a Value.
+type Kind string
+
 const (
-	Ref = "ref"
+	Ref Kind = "ref"
 
-	Bool = "bool"
+	Bool Kind = "bool"
 
-	Int   = "int"
-	Int8  = "int8"
-	Int16 = "int16"
-	Int32 = "int32"
-	Int64 = "int64"
+	Int   Kind = "int"
+	Int8  Kind = "int8"
+	Int16 Kind = "int16"
+	Int32 Kind = "int32"
+	Int64 Kind = "int64"
 
-	Uint   = "uint"
-	Uint8  = "uint8"
-	Uint16 = "uint16"
-	Uint32 = "uint32"
-	Uint64 = "uint64"
+	Uint   Kind = "uint"
+	Uint8  Kind = "uint8"
+	Uint16 Kind = "uint16"
+	Uint32 Kind = "uint32"
+	Uint64 Kind = "uint64"
 
-	Float32 = "float32"
-	Float64 = "float64"
+	Float32 Kind = "float32"
+	Float64 Kind = "float64"
 
-	String = "string"
-	Struct = "struct"
-	Slice  = "slice"
-	Array  = "array"
-	Map    = "map"
-	Ptr    = "ptr"
+	String Kind = "string"
+	Struct Kind = "struct"
+	Slice  Kind = "slice"
+	Array  Kind = "array"
+	Map    Kind = "map"
+	Ptr    Kind = "ptr"
 )

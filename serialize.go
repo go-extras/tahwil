@@ -137,7 +137,7 @@ func (vm *valueMapper) sliceToValue(v reflect.Value, kind reflect.Kind) (result 
 	result = &Value{}
 
 	result.Refid = vm.nextRefid()
-	result.Kind = kind.String()
+	result.Kind = Kind(kind.String())
 	result.Value, err = vm.toValueSlice(v)
 	if err != nil {
 		return nil, err
@@ -150,7 +150,7 @@ func (vm *valueMapper) mapOrStructToValue(v reflect.Value, kind reflect.Kind) (r
 	result = &Value{}
 
 	result.Refid = vm.nextRefid()
-	result.Kind = kind.String()
+	result.Kind = Kind(kind.String())
 	// not only maps can be set here, but also slices as they
 	// can be represented as a map[fieldName]value
 	result.Value, err = vm.toValueMap(v)
@@ -166,7 +166,7 @@ func (vm *valueMapper) scalarToValue(v reflect.Value) (result *Value, err error)
 
 	// here we process the remaining kinds ("simple" ones)
 	result.Refid = vm.nextRefid()
-	result.Kind = v.Type().Name()
+	result.Kind = Kind(v.Type().Name())
 	if result.Kind == "" {
 		return nil, &InvalidMapperKindError{Kind: ""}
 	}

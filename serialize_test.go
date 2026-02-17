@@ -432,7 +432,7 @@ func valueTests() []valueTest {
 
 	result = append(result, valueTest{
 		in:  [4]int{1, 2, 3, 4},
-		err: &tahwil.InvalidMapperKindError{Kind: tahwil.Array},
+		err: &tahwil.InvalidMapperKindError{Kind: string(tahwil.Array)},
 	})
 
 	result = append(result, valueTest{

@@ -35,7 +35,7 @@ func fromValueTests() []fromValueTest {
 
 	str := "xxx"
 	alltypes := &alltypesT{
-		String:  tahwil.String,
+		String:  "string",
 		Slice:   []int{1, 2},
 		Map:     map[string]int{"1": 1, "2": 2},
 		Pointer: &str,
@@ -56,7 +56,7 @@ func fromValueTests() []fromValueTest {
 					"String": {
 						Refid: 3,
 						Kind:  tahwil.String,
-						Value: tahwil.String,
+						Value: "string",
 					},
 					"Slice": {
 						Refid: 4,
