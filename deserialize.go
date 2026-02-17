@@ -2,6 +2,7 @@ package tahwil
 
 import (
 	"reflect"
+	"strings"
 )
 
 type UnmapperError struct {
@@ -54,6 +55,9 @@ func (vu *valueUnmapper) fieldByTag(t reflect.Type, key string) string {
 	for i := 0; i < t.NumField(); i++ {
 		ft := t.Field(i)
 		k := ft.Tag.Get("json")
+		if k != "" {
+			k, _, _ = strings.Cut(k, ",")
+		}
 		if k == "" {
 			k = ft.Name
 		}

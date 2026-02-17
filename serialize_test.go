@@ -30,6 +30,11 @@ type interfaceST struct {
 	NoSerialize2 bool `json:"_"`
 }
 
+type omitemptyT struct {
+	Name  string `json:"name,omitempty"`
+	Value int    `json:"value,omitempty"`
+}
+
 type valueTest struct {
 	in  any
 	out *tahwil.Value
@@ -389,6 +394,31 @@ func valueTests() []valueTest {
 						Refid: 3,
 						Kind:  tahwil.Uint64,
 						Value: uint64(1),
+					},
+				},
+			},
+		},
+	})
+
+	// json tags with options like omitempty should use only the name part
+	result = append(result, valueTest{
+		in: &omitemptyT{Name: "test", Value: 42},
+		out: &tahwil.Value{
+			Refid: 1,
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
+				Refid: 2,
+				Kind:  tahwil.Struct,
+				Value: map[string]*tahwil.Value{
+					"name": {
+						Refid: 3,
+						Kind:  tahwil.String,
+						Value: "test",
+					},
+					"value": {
+						Refid: 4,
+						Kind:  tahwil.Int,
+						Value: 42,
 					},
 				},
 			},
