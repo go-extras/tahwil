@@ -117,41 +117,43 @@ func (r *Resolver) resolveWIthSubvalues(v *Value) error {
 	return nil
 }
 
-func (r *Resolver) refFromValue(v *Value) (refid uint64, err error) {
+func (r *Resolver) refFromValue(v *Value) (uint64, error) {
+	var signed int64
+	var isSigned bool
+
 	switch vv := v.Value.(type) {
 	case float32:
-		refid = uint64(vv)
+		signed, isSigned = int64(vv), true
 	case float64:
-		refid = uint64(vv)
+		signed, isSigned = int64(vv), true
 	case int:
-		refid = uint64(vv)
+		signed, isSigned = int64(vv), true
 	case int8:
-		refid = uint64(vv)
+		signed, isSigned = int64(vv), true
 	case int16:
-		refid = uint64(vv)
+		signed, isSigned = int64(vv), true
 	case int32:
-		refid = uint64(vv)
+		signed, isSigned = int64(vv), true
 	case int64:
-		refid = uint64(vv)
+		signed, isSigned = vv, true
 	case uint:
-		refid = uint64(vv)
+		return uint64(vv), nil
 	case uint8:
-		refid = uint64(vv)
+		return uint64(vv), nil
 	case uint16:
-		refid = uint64(vv)
+		return uint64(vv), nil
 	case uint32:
-		refid = uint64(vv)
+		return uint64(vv), nil
 	case uint64:
-		refid = vv
+		return vv, nil
 	default:
-		return 0, &ResolverError{
-			Value: v,
-			Kind:  Ref,
-			Type:  Uint64,
-		}
+		return 0, &ResolverError{Value: v, Kind: Ref, Type: Uint64}
 	}
 
-	return refid, nil
+	if isSigned && signed < 0 {
+		return 0, &ResolverError{Value: v, Kind: Ref, Type: Uint64}
+	}
+	return uint64(signed), nil //nolint:gosec // bounds checked above
 }
 
 func (r *Resolver) resolveRef(v *Value) error {
