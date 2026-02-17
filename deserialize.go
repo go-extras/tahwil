@@ -212,7 +212,7 @@ func (vu *valueUnmapper) fromSliceValue(data *Value, v reflect.Value) error {
 		}
 		err := vu.fromValue(x, el)
 		if err != nil {
-			return nil
+			return err
 		}
 	}
 
@@ -251,7 +251,7 @@ func (vu *valueUnmapper) fromMapValue(data *Value, v reflect.Value) error {
 		f := reflect.New(v.Type().Elem()).Elem()
 		err := vu.fromValue(x, f)
 		if err != nil {
-			return nil
+			return err
 		}
 		fmt.Println(key, f)
 		v.SetMapIndex(key, f)

@@ -334,6 +334,76 @@ func fromValueTests() []fromValueTest {
 		err: `tahwil.Value: invalid value struct {}(struct {}{}) for kind "string"`,
 	})
 
+	// error inside a slice element should propagate
+	sliceTarget := &alltypesT{}
+	result = append(result, fromValueTest{
+		in: &tahwil.Value{
+			Refid: 1,
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
+				Refid: 2,
+				Kind:  tahwil.Struct,
+				Value: map[string]*tahwil.Value{
+					"String": {Refid: 3, Kind: tahwil.String, Value: ""},
+					"Bool":   {Refid: 4, Kind: tahwil.Bool, Value: false},
+					"Int":    {Refid: 5, Kind: tahwil.Int, Value: int64(0)},
+					"Uint":   {Refid: 6, Kind: tahwil.Uint, Value: uint64(0)},
+					"Float":  {Refid: 7, Kind: tahwil.Float64, Value: 0.0},
+					"Pointer": {Refid: 8, Kind: tahwil.Ptr, Value: nil},
+					"Map":    {Refid: 9, Kind: tahwil.Map, Value: nil},
+					"Slice": {
+						Refid: 10,
+						Kind:  tahwil.Slice,
+						Value: []*tahwil.Value{
+							{
+								Refid: 11,
+								Kind:  tahwil.Int,
+								Value: "not-an-int", // wrong type: string instead of int
+							},
+						},
+					},
+				},
+			},
+		},
+		out: sliceTarget,
+		err: `tahwil.Value: invalid value string("not-an-int") for kind "int"`,
+	})
+
+	// error inside a map value should propagate
+	mapTarget := &alltypesT{}
+	result = append(result, fromValueTest{
+		in: &tahwil.Value{
+			Refid: 1,
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
+				Refid: 2,
+				Kind:  tahwil.Struct,
+				Value: map[string]*tahwil.Value{
+					"String": {Refid: 3, Kind: tahwil.String, Value: ""},
+					"Bool":   {Refid: 4, Kind: tahwil.Bool, Value: false},
+					"Int":    {Refid: 5, Kind: tahwil.Int, Value: int64(0)},
+					"Uint":   {Refid: 6, Kind: tahwil.Uint, Value: uint64(0)},
+					"Float":  {Refid: 7, Kind: tahwil.Float64, Value: 0.0},
+					"Pointer": {Refid: 8, Kind: tahwil.Ptr, Value: nil},
+					"Slice":  {Refid: 9, Kind: tahwil.Slice, Value: nil},
+					"Map": {
+						Refid: 10,
+						Kind:  tahwil.Map,
+						Value: map[string]*tahwil.Value{
+							"key1": {
+								Refid: 11,
+								Kind:  tahwil.Int,
+								Value: "not-an-int", // wrong type: string instead of int
+							},
+						},
+					},
+				},
+			},
+		},
+		out: mapTarget,
+		err: `tahwil.Value: invalid value string("not-an-int") for kind "int"`,
+	})
+
 	return result
 }
 
