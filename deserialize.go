@@ -1,7 +1,6 @@
 package tahwil
 
 import (
-	"fmt"
 	"reflect"
 )
 
@@ -253,9 +252,7 @@ func (vu *valueUnmapper) fromMapValue(data *Value, v reflect.Value) error {
 		if err != nil {
 			return err
 		}
-		fmt.Println(key, f)
 		v.SetMapIndex(key, f)
-		fmt.Println(v)
 	}
 
 	return nil
