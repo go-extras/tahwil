@@ -72,7 +72,7 @@ func (vu *valueUnmapper) fieldByTag(t reflect.Type, key string) string {
 
 func (vu *valueUnmapper) fromBoolValue(data *Value, v reflect.Value) error {
 	if v.Kind() != reflect.Bool {
-		return &InvalidUnmapperKindError{Expected: Bool, Kind: v.Kind().String()}
+		return &InvalidUnmapperKindError{Expected: string(Bool), Kind: v.Kind().String()}
 	}
 
 	if fval, ok := data.Value.(bool); ok {
@@ -227,7 +227,7 @@ func (vu *valueUnmapper) fromMapValue(data *Value, v reflect.Value) error {
 		return nil
 	}
 	if v.Kind() != reflect.Map {
-		return &InvalidUnmapperKindError{Expected: Map, Kind: v.Kind().String()}
+		return &InvalidUnmapperKindError{Expected: string(Map), Kind: v.Kind().String()}
 	}
 	var keys []reflect.Value
 	mi, ok := data.Value.(map[string]any)
@@ -286,7 +286,7 @@ func (vu *valueUnmapper) fromPtrValue(data *Value, v reflect.Value) error {
 
 func (vu *valueUnmapper) fromStringValue(data *Value, v reflect.Value) error {
 	if v.Kind() != reflect.String {
-		return &InvalidUnmapperKindError{Expected: String, Kind: v.Kind().String()}
+		return &InvalidUnmapperKindError{Expected: string(String), Kind: v.Kind().String()}
 	}
 
 	if fval, ok := data.Value.(string); ok {
@@ -305,7 +305,7 @@ func (vu *valueUnmapper) fromStructValue(data *Value, v reflect.Value) error {
 		v = v.Elem()
 	}
 	if v.Kind() != reflect.Struct {
-		return &InvalidUnmapperKindError{Expected: Struct, Kind: v.Kind().String()}
+		return &InvalidUnmapperKindError{Expected: string(Struct), Kind: v.Kind().String()}
 	}
 	var keys []reflect.Value
 	mi, ok := data.Value.(map[string]any)
@@ -387,7 +387,7 @@ func (vu *valueUnmapper) fromValue(data *Value, v reflect.Value) error {
 		return vu.fromRefValue(data, v)
 	}
 
-	return &InvalidUnmapperKindError{Kind: data.Kind}
+	return &InvalidUnmapperKindError{Kind: string(data.Kind)}
 }
 
 func FromValue(data *Value, v any) error {

@@ -11,7 +11,7 @@ type Reference struct {
 
 type ResolverError struct {
 	Value *Value
-	Kind  string
+	Kind  Kind
 	Type  string
 }
 
@@ -147,11 +147,11 @@ func (r *Resolver) refFromValue(v *Value) (uint64, error) {
 	case uint64:
 		return vv, nil
 	default:
-		return 0, &ResolverError{Value: v, Kind: Ref, Type: Uint64}
+		return 0, &ResolverError{Value: v, Kind: Ref, Type: string(Uint64)}
 	}
 
 	if isSigned && signed < 0 {
-		return 0, &ResolverError{Value: v, Kind: Ref, Type: Uint64}
+		return 0, &ResolverError{Value: v, Kind: Ref, Type: string(Uint64)}
 	}
 	return uint64(signed), nil //nolint:gosec // bounds checked above
 }

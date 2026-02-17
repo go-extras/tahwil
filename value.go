@@ -7,14 +7,14 @@ import (
 
 type Value struct {
 	Refid uint64 `json:"refid"`
-	Kind  string `json:"kind"`
+	Kind  Kind   `json:"kind"`
 	Value any    `json:"value"`
 }
 
 // An InvalidValueError describes invalid Value state.
 type InvalidValueError struct {
 	Value any
-	Kind  string
+	Kind  Kind
 }
 
 func (e *InvalidValueError) Error() string {
@@ -22,21 +22,21 @@ func (e *InvalidValueError) Error() string {
 }
 
 type InvalidValueKindError struct {
-	Kind string
+	Kind Kind
 }
 
 func (e *InvalidValueKindError) Error() string {
-	return "tahwil.Value: invalid value kind \"" + e.Kind + "\""
+	return "tahwil.Value: invalid value kind \"" + string(e.Kind) + "\""
 }
 
-func fixPtr(kind string, v any) (any, error) {
+func fixPtr(kind Kind, v any) (any, error) {
 	m, ok := v.(map[string]any)
 	if !ok {
 		return nil, &InvalidValueError{Kind: kind, Value: v}
 	}
 	iv := &Value{
 		Refid: uint64(m["refid"].(float64)),
-		Kind:  m["kind"].(string),
+		Kind:  Kind(m["kind"].(string)),
 	}
 	if m["value"] == nil {
 		return iv, nil
@@ -49,7 +49,7 @@ func fixPtr(kind string, v any) (any, error) {
 	return iv, nil
 }
 
-func fixStructOrMap(kind string, v any) (any, error) {
+func fixStructOrMap(kind Kind, v any) (any, error) {
 	m, ok := v.(map[string]any)
 	if !ok {
 		return nil, &InvalidValueError{Kind: kind, Value: v}
@@ -64,7 +64,7 @@ func fixStructOrMap(kind string, v any) (any, error) {
 	return m, nil
 }
 
-func fixSlice(kind string, v any) (any, error) {
+func fixSlice(kind Kind, v any) (any, error) {
 	m, ok := v.([]any)
 	if !ok {
 		return nil, &InvalidValueError{Kind: kind, Value: v}
@@ -82,7 +82,7 @@ func fixSlice(kind string, v any) (any, error) {
 // fixTypes recursively fixes field types after json.Unmarshal
 //
 //nolint:gocyclo // go lacks generics and as such there is no further way to optimize it
-func fixTypes(kind string, v any) (res any, err error) {
+func fixTypes(kind Kind, v any) (res any, err error) {
 	switch kind {
 	case String, Bool:
 		return v, nil
@@ -144,8 +144,8 @@ func (v *Value) UnmarshalJSON(b []byte) error {
 	}
 
 	v.Refid = innerV.Refid
-	v.Kind = innerV.Kind
-	v.Value, err = fixTypes(innerV.Kind, innerV.Value)
+	v.Kind = Kind(innerV.Kind)
+	v.Value, err = fixTypes(Kind(innerV.Kind), innerV.Value)
 	if err != nil {
 		return err
 	}

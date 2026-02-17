@@ -502,7 +502,7 @@ func TestValue_UnmarshalJSON(t *testing.T) {
 
 func TestInvalidValueKindError_Error(t *testing.T) {
 	err := &tahwil.InvalidValueKindError{Kind: "invalid"}
-	expected := "tahwil.Value: invalid value kind \"" + err.Kind + "\""
+	expected := "tahwil.Value: invalid value kind \"" + string(err.Kind) + "\""
 	if err.Error() != expected {
 		t.Errorf("mismatch\nhave: %#+v\nwant: %#+v", err.Error(), expected)
 	}
