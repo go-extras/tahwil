@@ -276,6 +276,25 @@ func fromValueTests() []fromValueTest {
 		},
 	})
 
+	// array deserialization
+	arr := &[3]int{10, 20, 30}
+	result = append(result, fromValueTest{
+		in: &tahwil.Value{
+			Refid: 1,
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
+				Refid: 2,
+				Kind:  tahwil.Array,
+				Value: []*tahwil.Value{
+					{Refid: 3, Kind: tahwil.Int, Value: int64(10)},
+					{Refid: 4, Kind: tahwil.Int, Value: int64(20)},
+					{Refid: 5, Kind: tahwil.Int, Value: int64(30)},
+				},
+			},
+		},
+		out: arr,
+	})
+
 	p1 := &personT{
 		Name: "Martin",
 		Parent: &personT{

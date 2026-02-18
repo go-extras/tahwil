@@ -197,6 +197,41 @@ func (vu *valueUnmapper) fromFloatValue(data *Value, v reflect.Value) error {
 	return &InvalidUnmapperKindError{Expected: "float32|float64", Kind: v.Kind().String()}
 }
 
+func (vu *valueUnmapper) fromArrayValue(data *Value, v reflect.Value) error {
+	if data.Value == nil {
+		return nil
+	}
+	mi, _ := data.Value.([]any)
+	mv, _ := data.Value.([]*Value)
+	if mi == nil && mv == nil {
+		return &InvalidValueError{Value: data.Value, Kind: data.Kind}
+	}
+
+	dataLen := len(mv)
+	if mi != nil {
+		dataLen = len(mi)
+	}
+	n := v.Len()
+	if dataLen < n {
+		n = dataLen
+	}
+	for i := 0; i < n; i++ {
+		var x *Value
+		el := v.Index(i)
+		if mv != nil {
+			x = mv[i]
+		} else {
+			x = mi[i].(*Value)
+		}
+		err := vu.fromValue(x, el)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (vu *valueUnmapper) fromSliceValue(data *Value, v reflect.Value) error {
 	if data.Value == nil {
 		return nil
@@ -385,7 +420,9 @@ func (vu *valueUnmapper) fromValue(data *Value, v reflect.Value) error {
 		return vu.fromUintValue(data, v)
 	case Float32, Float64:
 		return vu.fromFloatValue(data, v)
-	case /*Array, */ Slice: // TODO: how to deal with array?
+	case Array:
+		return vu.fromArrayValue(data, v)
+	case Slice:
 		return vu.fromSliceValue(data, v)
 	case Map:
 		return vu.fromMapValue(data, v)
