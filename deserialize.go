@@ -198,6 +198,12 @@ func (vu *valueUnmapper) fromFloatValue(data *Value, v reflect.Value) error {
 }
 
 func (vu *valueUnmapper) fromArrayValue(data *Value, v reflect.Value) error {
+	if v.Kind() == reflect.Interface {
+		v = v.Elem()
+	}
+	if v.Kind() != reflect.Array {
+		return &InvalidUnmapperKindError{Expected: "array", Kind: v.Kind().String()}
+	}
 	if data.Value == nil {
 		return nil
 	}
