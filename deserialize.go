@@ -362,7 +362,9 @@ func (vu *valueUnmapper) fromRefValue(data *Value, v reflect.Value) error {
 
 // fills v with the values from data
 func (vu *valueUnmapper) fromValue(data *Value, v reflect.Value) error {
-	vu.refs[data.Refid] = v
+	if data.Refid != 0 {
+		vu.refs[data.Refid] = v
+	}
 
 	switch data.Kind {
 	case Bool:

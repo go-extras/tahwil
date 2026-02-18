@@ -30,6 +30,8 @@ type valueMapper struct {
 	lastRefid uint64
 	// structFieldCache caches exported struct fields per type
 	structFieldCache map[reflect.Type][]structFieldInfo
+	// allRefids assigns a refid to every value (compat mode)
+	allRefids bool
 }
 
 func newValueMapper() *valueMapper {
@@ -161,7 +163,9 @@ func (vm *valueMapper) ptrToValue(v reflect.Value) (result *Value, err error) {
 func (vm *valueMapper) sliceToValue(v reflect.Value, kind reflect.Kind) (result *Value, err error) {
 	result = &Value{}
 
-	result.Refid = vm.nextRefid()
+	if vm.allRefids {
+		result.Refid = vm.nextRefid()
+	}
 	result.Kind = Kind(kind.String())
 	result.Value, err = vm.toValueSlice(v)
 	if err != nil {
@@ -174,7 +178,9 @@ func (vm *valueMapper) sliceToValue(v reflect.Value, kind reflect.Kind) (result 
 func (vm *valueMapper) mapOrStructToValue(v reflect.Value, kind reflect.Kind) (result *Value, err error) {
 	result = &Value{}
 
-	result.Refid = vm.nextRefid()
+	if vm.allRefids {
+		result.Refid = vm.nextRefid()
+	}
 	result.Kind = Kind(kind.String())
 	// not only maps can be set here, but also slices as they
 	// can be represented as a map[fieldName]value
@@ -190,7 +196,9 @@ func (vm *valueMapper) scalarToValue(v reflect.Value) (result *Value, err error)
 	result = &Value{}
 
 	// here we process the remaining kinds ("simple" ones)
-	result.Refid = vm.nextRefid()
+	if vm.allRefids {
+		result.Refid = vm.nextRefid()
+	}
 	result.Kind = Kind(v.Type().Name())
 	if result.Kind == "" {
 		return nil, &InvalidMapperKindError{Kind: ""}
@@ -229,8 +237,9 @@ func (vm *valueMapper) toValue(v reflect.Value) (result *Value, err error) {
 // ToValue transforms i to *Value.
 // NOTES:
 //   - (*Value).Kind will be set to the reflected value kind (see reflect.Kind).
-//   - each value will get its own (*Value).Refid that is a counter incremented
-//     with every next (underlying value).
+//   - only pointer and back-reference values receive a non-zero (*Value).Refid;
+//     scalars and containers get Refid 0. Use ToValueCompat for the legacy
+//     behavior where every value gets a unique Refid.
 //   - each "simple" type (int, string, bool) will be stored in (*Value).Value
 //   - each type that holds other values inside (ptr, map, slice, struct) will
 //     produce a further *Value that will be stored in (*Value).Value.
@@ -261,5 +270,19 @@ func ToValue(i any) (*Value, error) {
 		v = reflect.ValueOf(&i)
 	}
 	vm := newValueMapper()
+	return vm.toValue(v)
+}
+
+// ToValueCompat works like ToValue but assigns a unique Refid to every
+// value, including scalars and containers. This matches the behavior of
+// ToValue prior to the refid optimisation and can be used when wire-format
+// compatibility with older serialized data is required.
+func ToValueCompat(i any) (*Value, error) {
+	v := reflect.ValueOf(i)
+	if v.Kind() != reflect.Ptr {
+		v = reflect.ValueOf(&i)
+	}
+	vm := newValueMapper()
+	vm.allRefids = true
 	return vm.toValue(v)
 }
