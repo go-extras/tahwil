@@ -19,7 +19,7 @@ func (e *InvalidMapperKindError) Error() string {
 }
 
 type structFieldInfo struct {
-	index int
+	index []int
 	key   string
 }
 
@@ -47,10 +47,10 @@ func (vm *valueMapper) cachedStructFields(t reflect.Type) []structFieldInfo {
 		return fields
 	}
 
-	fields := make([]structFieldInfo, 0, t.NumField())
-	for i := 0; i < t.NumField(); i++ {
-		ft := t.Field(i)
-		if !ft.IsExported() {
+	visible := reflect.VisibleFields(t)
+	fields := make([]structFieldInfo, 0, len(visible))
+	for _, ft := range visible {
+		if !ft.IsExported() || ft.Anonymous {
 			continue
 		}
 		k := ft.Tag.Get("json")
@@ -63,7 +63,7 @@ func (vm *valueMapper) cachedStructFields(t reflect.Type) []structFieldInfo {
 		if k == "-" || k == "_" {
 			continue
 		}
-		fields = append(fields, structFieldInfo{index: i, key: k})
+		fields = append(fields, structFieldInfo{index: ft.Index, key: k})
 	}
 	vm.structFieldCache[t] = fields
 	return fields
@@ -119,7 +119,7 @@ func (vm *valueMapper) toValueMap(v reflect.Value) (result map[string]*Value, er
 
 	if kind == reflect.Struct {
 		for _, fi := range vm.cachedStructFields(v.Type()) {
-			f := v.Field(fi.index)
+			f := v.FieldByIndex(fi.index)
 			result[fi.key], err = vm.toValue(f)
 			if err != nil {
 				return nil, err
