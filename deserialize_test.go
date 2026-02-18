@@ -585,3 +585,72 @@ func TestUnmarshal(t *testing.T) {
 		t.Fatal("expected error from Unmarshal with bad data, got nil")
 	}
 }
+
+// TestFromValue_ForwardRef verifies that a Ref pointing to a node encountered
+// later in the DFS walk (forward reference) is resolved correctly.
+func TestFromValue_ForwardRef(t *testing.T) {
+	// children[0] is a forward Ref to refid 7 (the Ptr node
+	// wrapping childB), which appears at children[1]. Slices guarantee
+	// deterministic iteration order, so children[0] is visited before children[1].
+	forwardData := &tahwil.Value{
+		Refid: 1,
+		Kind:  tahwil.Ptr,
+		Value: &tahwil.Value{
+			Refid: 2,
+			Kind:  tahwil.Struct,
+			Value: map[string]*tahwil.Value{
+				"name": {Refid: 3, Kind: tahwil.String, Value: "root"},
+				"parent": {Refid: 4, Kind: tahwil.Ptr, Value: nil},
+				"children": {
+					Refid: 5,
+					Kind:  tahwil.Slice,
+					Value: []*tahwil.Value{
+						{
+							Refid: 6,
+							Kind:  tahwil.Ref,
+							Value: uint64(7), // forward ref to the Ptr node at children[1]
+						},
+						{
+							Refid: 7,
+							Kind:  tahwil.Ptr,
+							Value: &tahwil.Value{
+								Refid: 8,
+								Kind:  tahwil.Struct,
+								Value: map[string]*tahwil.Value{
+									"name":     {Refid: 9, Kind: tahwil.String, Value: "childB"},
+									"parent":   {Refid: 10, Kind: tahwil.Ptr, Value: nil},
+									"children": {Refid: 11, Kind: tahwil.Slice, Value: nil},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	var result personT
+	if err := tahwil.FromValue(forwardData, &result); err != nil {
+		t.Fatalf("FromValue with forward ref: %v", err)
+	}
+
+	if result.Name != "root" {
+		t.Errorf("Name = %q, want %q", result.Name, "root")
+	}
+	if len(result.Children) != 2 {
+		t.Fatalf("len(Children) = %d, want 2", len(result.Children))
+	}
+	// children[0] was a forward Ref to refid 7 (the Ptr at children[1])
+	if result.Children[0] == nil {
+		t.Fatal("Children[0] is nil, expected resolved forward ref")
+	}
+	if result.Children[0].Name != "childB" {
+		t.Errorf("Children[0].Name = %q, want %q", result.Children[0].Name, "childB")
+	}
+	if result.Children[1] == nil {
+		t.Fatal("Children[1] is nil")
+	}
+	if result.Children[1].Name != "childB" {
+		t.Errorf("Children[1].Name = %q, want %q", result.Children[1].Name, "childB")
+	}
+}
