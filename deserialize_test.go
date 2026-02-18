@@ -1,6 +1,7 @@
 package tahwil_test
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 
@@ -430,6 +431,37 @@ func fromValueTests() []fromValueTest {
 	})
 
 	return result
+}
+
+func TestUnmapperError_Unwrap(t *testing.T) {
+	// Trigger a resolver error via an invalid ref value type (string instead of numeric).
+	data := &tahwil.Value{
+		Refid: 1,
+		Kind:  tahwil.Ref,
+		Value: "not-a-number",
+	}
+	var target string
+	err := tahwil.FromValue(data, &target)
+	if err == nil {
+		t.Fatal("expected an error, got nil")
+	}
+
+	// errors.As should reach the underlying ResolverError
+	var resolverErr *tahwil.ResolverError
+	if !errors.As(err, &resolverErr) {
+		t.Fatalf("expected errors.As to find *ResolverError, got %T: %v", err, err)
+	}
+
+	// errors.As should also match UnmapperError itself
+	var unmapperErr *tahwil.UnmapperError
+	if !errors.As(err, &unmapperErr) {
+		t.Fatalf("expected errors.As to find *UnmapperError, got %T: %v", err, err)
+	}
+
+	// Unwrap should return the ResolverError directly
+	if unmapperErr.Unwrap() == nil {
+		t.Fatal("expected Unwrap() to return non-nil error")
+	}
 }
 
 func TestFromValue(t *testing.T) {
