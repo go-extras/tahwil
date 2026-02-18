@@ -1,16 +1,51 @@
 # tahwil
-Cyclic graph structures serialization library written in go.
 
-[<img src="https://travis-ci.org/go-extras/tahwil.svg?branch=master" />](https://travis-ci.org/go-extras/tahwil)
+A Go library for serializing cyclic graph structures to JSON.
 
-## How can it be useful?
+[![Build](https://github.com/go-extras/tahwil/actions/workflows/test.yml/badge.svg)](https://github.com/go-extras/tahwil/actions/workflows/test.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/go-extras/tahwil)](https://goreportcard.com/report/github.com/go-extras/tahwil)
+[![Go Reference](https://pkg.go.dev/badge/github.com/go-extras/tahwil.svg)](https://pkg.go.dev/github.com/go-extras/tahwil)
+[![License](https://img.shields.io/github/license/go-extras/tahwil)](LICENSE)
 
-Sometimes you need to serialize a structure that has circular references.
-This library lets you transform your cyclic graph to a tree and then serialize to json.
+## Overview
 
-## How to use it?
+Tahwil transforms cyclic graph structures into serializable trees, enabling JSON encoding of complex data structures with circular references. The library preserves structural integrity by converting cycles into explicit references, making it ideal for serializing interconnected domain models, graph databases, or any data structure where objects reference each other.
+
+## Features
+
+- **Cycle Detection**: Automatically identifies and handles circular references
+- **Type Safety**: Preserves Go type information during serialization and deserialization
+- **Comprehensive Type Support**: Works with structs, slices, maps, pointers, and all primitive types
+- **Bidirectional**: Full encoding and decoding support
+- **Zero Dependencies**: Built using only the Go standard library
+
+## Installation
+
+```bash
+go get github.com/go-extras/tahwil
+```
+
+## Quick Start
+
+```go
+import "github.com/go-extras/tahwil"
+
+// Serialize
+value, err := tahwil.ToValue(myStruct)
+jsonData, err := json.Marshal(value)
+
+// Deserialize
+var value tahwil.Value
+json.Unmarshal(jsonData, &value)
+err := tahwil.FromValue(&value, &myStruct)
+```
+
+## Usage
+
 
 ### Encoding
+
+Transform a cyclic structure into a serializable format:
 
 ```go
 package main
@@ -32,20 +67,18 @@ func main() {
 	parent := &Person{
 		Name: "Arthur",
 		Children: []*Person{
-			{
-				Name: "Ford",
-			},
-			{
-				Name: "Trillian",
-			},
+			{Name: "Ford"},
+			{Name: "Trillian"},
 		},
 	}
 	parent.Children[0].Parent = parent
 	parent.Children[1].Parent = parent
+	
 	v, err := tahwil.ToValue(parent)
 	if err != nil {
 		panic(err)
 	}
+	
 	res, err := json.Marshal(v)
 	if err != nil {
 		panic(err)
@@ -54,87 +87,93 @@ func main() {
 }
 ```
 
-The output will be one-line equivalent of the following JSON:
+<details>
+<summary>Example output (formatted for readability)</summary>
+
 ```json
-    {
-      "refid": 1,
-      "kind": "ptr",
-      "value": {
-        "refid": 2,
-        "kind": "struct",
-        "value": {
-          "Children": {
-            "refid": 5,
-            "kind": "slice",
-            "value": [
-              {
-                "refid": 6,
-                "kind": "ptr",
-                "value": {
-                  "refid": 7,
-                  "kind": "struct",
-                  "value": {
-                    "Children": {
-                      "refid": 10,
-                      "kind": "slice",
-                      "value": []
-                    },
-                    "Name": {
-                      "refid": 8,
-                      "kind": "string",
-                      "value": "Ford"
-                    },
-                    "Parent": {
-                      "refid": 9,
-                      "kind": "ref",
-                      "value": 1
-                    }
-                  }
-                }
-              },
-              {
-                "refid": 11,
-                "kind": "ptr",
-                "value": {
-                  "refid": 12,
-                  "kind": "struct",
-                  "value": {
-                    "Children": {
-                      "refid": 15,
-                      "kind": "slice",
-                      "value": []
-                    },
-                    "Name": {
-                      "refid": 13,
-                      "kind": "string",
-                      "value": "Trillian"
-                    },
-                    "Parent": {
-                      "refid": 14,
-                      "kind": "ref",
-                      "value": 1
-                    }
-                  }
+{
+  "refid": 1,
+  "kind": "ptr",
+  "value": {
+    "refid": 2,
+    "kind": "struct",
+    "value": {
+      "Children": {
+        "refid": 5,
+        "kind": "slice",
+        "value": [
+          {
+            "refid": 6,
+            "kind": "ptr",
+            "value": {
+              "refid": 7,
+              "kind": "struct",
+              "value": {
+                "Children": {
+                  "refid": 10,
+                  "kind": "slice",
+                  "value": []
+                },
+                "Name": {
+                  "refid": 8,
+                  "kind": "string",
+                  "value": "Ford"
+                },
+                "Parent": {
+                  "refid": 9,
+                  "kind": "ref",
+                  "value": 1
                 }
               }
-            ]
+            }
           },
-          "Name": {
-            "refid": 3,
-            "kind": "string",
-            "value": "Arthur"
-          },
-          "Parent": {
-            "refid": 4,
+          {
+            "refid": 11,
             "kind": "ptr",
-            "value": null
+            "value": {
+              "refid": 12,
+              "kind": "struct",
+              "value": {
+                "Children": {
+                  "refid": 15,
+                  "kind": "slice",
+                  "value": []
+                },
+                "Name": {
+                  "refid": 13,
+                  "kind": "string",
+                  "value": "Trillian"
+                },
+                "Parent": {
+                  "refid": 14,
+                  "kind": "ref",
+                  "value": 1
+                }
+              }
+            }
           }
-        }
+        ]
+      },
+      "Name": {
+        "refid": 3,
+        "kind": "string",
+        "value": "Arthur"
+      },
+      "Parent": {
+        "refid": 4,
+        "kind": "ptr",
+        "value": null
       }
     }
+  }
+}
 ```
 
+</details>
+
 ### Decoding
+
+Deserialize back into your original structure:
 
 ```go
 package main
@@ -152,97 +191,69 @@ type Person struct {
 	Children []*Person `json:"children"`
 }
 
-func prepareData() []byte {
-	parent := &Person{
-		Name: "Arthur",
-		Children: []*Person{
-			{
-				Name: "Ford",
-			},
-			{
-				Name: "Trillian",
-			},
-		},
-	}
-	parent.Children[0].Parent = parent
-	parent.Children[1].Parent = parent
-	v, err := tahwil.ToValue(parent)
-	if err != nil {
-		panic(err)
-	}
-	res, err := json.Marshal(v)
-	if err != nil {
-		panic(err)
-	}
-	return res
-}
-
 func main() {
-	data := &tahwil.Value{}
-	res := prepareData()
-	err := json.Unmarshal(res, data)
+	// Assuming you have serialized JSON data
+	var value tahwil.Value
+	err := json.Unmarshal(jsonData, &value)
 	if err != nil {
 		panic(err)
 	}
-	person := &Person{}
-	err = tahwil.FromValue(data, person)
+	
+	var person Person
+	err = tahwil.FromValue(&value, &person)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf(`Name: %s
-Children:
-    - %s
-	-- parent name: %s
-    - %s
-	-- parent name: %s
-`, person.Name,
-		person.Children[0].Name,
-		person.Children[0].Parent.Name,
-		person.Children[1].Name,
-		person.Children[1].Parent.Name)
+	
+	// Circular references are preserved
+	fmt.Printf("Name: %s\n", person.Name)
+	fmt.Printf("First child: %s\n", person.Children[0].Name)
+	fmt.Printf("First child's parent: %s\n", person.Children[0].Parent.Name)
 }
 ```
 
-This should output:
-
+**Output:**
 ```
 Name: Arthur
-Children:
-    - Ford
-	-- parent name: Arthur
-    - Trillian
-	-- parent name: Arthur
+First child: Ford
+First child's parent: Arthur
 ```
 
-As you can see, Arthur is displayed here 3 times - first as a main person, and then as a parent of the both children.
+The circular reference is preserved—Arthur appears as both the root person and as the parent of his children.
 
-## Limitations
+## Supported Types
 
-### Supported types (kinds)
+The library handles the following Go types:
 
-We support the following go built-in types (kinds):
+**Primitives:**
+- `string`, `bool`
+- `int`, `int8`, `int16`, `int32`, `int64`
+- `uint`, `uint8`, `uint16`, `uint32`, `uint64`
+- `float32`, `float64`
 
-* string
-* bool
-* int
-* int8
-* int16
-* int32
-* int64
-* uint
-* uint8
-* uint16
-* uint32
-* uint64
-* float32
-* float64
-* ptr
-* struct
-* map
-* slice
+**Complex types:**
+- `ptr` (pointers)
+- `struct`
+- `map`
+- `slice`
 
-In addition, `tahwil` adds a `ref` type, which is used to refer to the cyclic reference and thus avoid endless recursion.
+**Special:**
+- `ref` (internal type for representing circular references)
 
-Structs, slices, maps and pointers must pointer to one of the supported types.
+All complex types must contain only supported types.
 
-##
+## Use Cases
+
+- **Domain Models**: Serialize interconnected business objects with bidirectional relationships
+- **Graph Databases**: Export and import graph structures while preserving topology
+- **Caching**: Store complex object graphs in JSON-based caches
+- **API Responses**: Send graph structures over HTTP without losing referential integrity
+- **Configuration**: Persist and restore complex configurations with shared references
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
