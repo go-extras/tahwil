@@ -50,7 +50,7 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.Bool,
 				Value: true,
 			},
@@ -72,7 +72,7 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.String,
 				Value: "test",
 			},
@@ -86,7 +86,7 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.String,
 				Value: "test",
 			},
@@ -99,11 +99,11 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.Struct,
 				Value: map[string]*tahwil.Value{
 					"Value": {
-						Refid: 3,
+						Refid: 0,
 						Kind:  tahwil.String,
 						Value: "test",
 					},
@@ -118,7 +118,7 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.String,
 				Value: "test",
 			},
@@ -131,7 +131,7 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.Int,
 				Value: int(47),
 			},
@@ -143,7 +143,7 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.Int8,
 				Value: int8(47),
 			},
@@ -155,7 +155,7 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.Int16,
 				Value: int16(47),
 			},
@@ -167,7 +167,7 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.Int32,
 				Value: int32(47),
 			},
@@ -179,7 +179,7 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.Int64,
 				Value: int64(47),
 			},
@@ -192,7 +192,7 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.Uint,
 				Value: uint(47),
 			},
@@ -204,7 +204,7 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.Uint8,
 				Value: uint8(47),
 			},
@@ -216,7 +216,7 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.Uint8,
 				Value: uint8(47),
 			},
@@ -228,7 +228,7 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.Uint16,
 				Value: uint16(47),
 			},
@@ -240,7 +240,7 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.Uint32,
 				Value: uint32(47),
 			},
@@ -252,7 +252,7 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.Float32,
 				Value: float32(47.47),
 			},
@@ -264,7 +264,7 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.Float64,
 				Value: float64(47.47),
 			},
@@ -279,16 +279,16 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.Struct,
 				Value: map[string]*tahwil.Value{
 					"Name": {
-						Refid: 3,
+						Refid: 0,
 						Kind:  tahwil.String,
 						Value: "Patrik",
 					},
 					"Children": {
-						Refid: 4,
+						Refid: 0,
 						Kind:  tahwil.Slice,
 						Value: []*tahwil.Value{},
 					},
@@ -312,32 +312,32 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.Struct,
 				Value: map[string]*tahwil.Value{
 					"Name": {
-						Refid: 3,
+						Refid: 0,
 						Kind:  tahwil.String,
 						Value: "Patrik",
 					},
 					"Children": {
-						Refid: 4,
+						Refid: 0,
 						Kind:  tahwil.Slice,
 						Value: []*tahwil.Value{
 							{
-								Refid: 5,
+								Refid: 2,
 								Kind:  tahwil.Ptr,
 								Value: &tahwil.Value{
-									Refid: 6,
+									Refid: 0,
 									Kind:  tahwil.Struct,
 									Value: map[string]*tahwil.Value{
 										"Name": {
-											Refid: 7,
+											Refid: 0,
 											Kind:  tahwil.String,
 											Value: "Valentine",
 										},
 										"Parent": {
-											Refid: 8,
+											Refid: 3,
 											Kind:  tahwil.Ref,
 											Value: uint64(1),
 										},
@@ -361,16 +361,16 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.Struct,
 				Value: map[string]*tahwil.Value{
 					"Name": {
-						Refid: 3,
+						Refid: 0,
 						Kind:  tahwil.String,
 						Value: "Klark",
 					},
 					"Self": {
-						Refid: 4,
+						Refid: 2,
 						Kind:  tahwil.Ref,
 						Value: uint64(1),
 					},
@@ -387,11 +387,11 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.Map,
 				Value: map[string]*tahwil.Value{
 					"Id": {
-						Refid: 3,
+						Refid: 0,
 						Kind:  tahwil.Uint64,
 						Value: uint64(1),
 					},
@@ -407,16 +407,16 @@ func valueTests() []valueTest {
 			Refid: 1,
 			Kind:  tahwil.Ptr,
 			Value: &tahwil.Value{
-				Refid: 2,
+				Refid: 0,
 				Kind:  tahwil.Struct,
 				Value: map[string]*tahwil.Value{
 					"name": {
-						Refid: 3,
+						Refid: 0,
 						Kind:  tahwil.String,
 						Value: "test",
 					},
 					"value": {
-						Refid: 4,
+						Refid: 0,
 						Kind:  tahwil.Int,
 						Value: 42,
 					},
@@ -478,5 +478,31 @@ func TestToValue(t *testing.T) {
 			}
 			t.Errorf("#%d: mismatch\nhave: %v\nwant: %v", i, string(x), string(y))
 		}
+	}
+}
+
+func TestToValueCompat(t *testing.T) {
+	// ToValueCompat should assign refids to all values, including scalars
+	v, err := tahwil.ToValueCompat(&parentSerT{Name: "test"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	// outer Ptr gets refid 1
+	if v.Refid != 1 || v.Kind != tahwil.Ptr {
+		t.Fatalf("expected Ptr with refid 1, got %v with refid %d", v.Kind, v.Refid)
+	}
+	inner := v.Value.(*tahwil.Value)
+	// inner Struct gets refid 2 (all values get refids in compat mode)
+	if inner.Refid != 2 || inner.Kind != tahwil.Struct {
+		t.Fatalf("expected Struct with refid 2, got %v with refid %d", inner.Kind, inner.Refid)
+	}
+	fields := inner.Value.(map[string]*tahwil.Value)
+	// Name field gets refid 3
+	if fields["Name"].Refid != 3 {
+		t.Errorf("expected Name refid 3, got %d", fields["Name"].Refid)
+	}
+	// Children field gets refid 4
+	if fields["Children"].Refid != 4 {
+		t.Errorf("expected Children refid 4, got %d", fields["Children"].Refid)
 	}
 }

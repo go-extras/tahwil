@@ -194,11 +194,13 @@ func (r *Resolver) resolve(v *Value) error {
 		return &ResolverError{Value: v}
 	}
 
-	r.resolvedRefs[v.Refid] = v
-	if ref, ok := r.unresolvedRefs[v.Refid]; ok {
-		ref.Value = v
-		// ok, we resolved it, remove it from the unresolved map
-		delete(r.unresolvedRefs, v.Refid)
+	if v.Refid != 0 {
+		r.resolvedRefs[v.Refid] = v
+		if ref, ok := r.unresolvedRefs[v.Refid]; ok {
+			ref.Value = v
+			// ok, we resolved it, remove it from the unresolved map
+			delete(r.unresolvedRefs, v.Refid)
+		}
 	}
 
 	switch v.Kind {
