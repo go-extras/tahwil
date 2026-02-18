@@ -219,13 +219,11 @@ func (vm *valueMapper) toValue(v reflect.Value) (result *Value, err error) {
 	}
 
 	switch kind {
-	case reflect.Chan, reflect.Func, reflect.Uintptr, reflect.Array, reflect.UnsafePointer:
+	case reflect.Chan, reflect.Func, reflect.Uintptr, reflect.UnsafePointer:
 		return nil, &InvalidMapperKindError{Kind: kind.String()}
 	case reflect.Ptr:
 		return vm.ptrToValue(v)
-	// case reflect.Array: // TODO: implement array?
-	//	fallthrough
-	case reflect.Slice:
+	case reflect.Array, reflect.Slice:
 		return vm.sliceToValue(v, kind)
 	case reflect.Struct, reflect.Map:
 		return vm.mapOrStructToValue(v, kind)
@@ -245,7 +243,7 @@ func (vm *valueMapper) toValue(v reflect.Value) (result *Value, err error) {
 //     produce a further *Value that will be stored in (*Value).Value.
 //   - the transformation process will continue until all the non-simple types are processed.
 //   - non-serializable types (func, chan) will lead to a mapping error.
-//   - there are unsupported serializable types: array, complex[64,128], unsafe pointer.
+//   - there are unsupported serializable types: complex[64,128], unsafe pointer.
 //   - ptr type will produce *Value with an underlying value.
 //   - nil ptr will result in (*Value).Value set to nil.
 //   - each non-nil pointer Refid is stored in a Refid map. This map is used

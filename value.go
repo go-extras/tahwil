@@ -114,7 +114,7 @@ func fixTypes(kind Kind, v any) (res any, err error) {
 		return fixPtr(kind, v)
 	case Struct, Map:
 		return fixStructOrMap(kind, v)
-	case /*Array, */ Slice: // TODO: support array?
+	case Array, Slice:
 		return fixSlice(kind, v)
 	}
 
