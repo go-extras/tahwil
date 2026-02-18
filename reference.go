@@ -129,6 +129,7 @@ func toUint64Signed[T signedOrFloat](v T) (uint64, bool) {
 	return uint64(i), true //nolint:gosec // bounds checked above
 }
 
+//nolint:gocyclo // necessary type-switch across all numeric types
 func (r *Resolver) refFromValue(v *Value) (uint64, error) {
 	switch vv := v.Value.(type) {
 	case float32:
