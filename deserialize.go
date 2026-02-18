@@ -125,6 +125,7 @@ func (vu *valueUnmapper) fromBoolValue(data *Value, v reflect.Value) error {
 	}
 }
 
+//nolint:dupl // int and uint cases share structure, but differ in signedness
 func (vu *valueUnmapper) fromIntValue(data *Value, v reflect.Value) error {
 	switch v.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -158,6 +159,7 @@ func (vu *valueUnmapper) fromIntValue(data *Value, v reflect.Value) error {
 	return &InvalidUnmapperKindError{Expected: "int|int8|int16|int32|int64", Kind: v.Kind().String()}
 }
 
+//nolint:dupl // uint and int cases share structure, but differ in signedness
 func (vu *valueUnmapper) fromUintValue(data *Value, v reflect.Value) error {
 	switch v.Kind() {
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
