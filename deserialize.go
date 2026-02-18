@@ -1,6 +1,7 @@
 package tahwil
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 )
@@ -485,4 +486,60 @@ func Unmarshal[T any](data *Value) (*T, error) {
 		return nil, err
 	}
 	return &result, nil
+}
+
+type ResolverError struct {
+	Value *Value
+	Kind  Kind
+	Type  string
+}
+
+func (e *ResolverError) Error() string {
+	if e.Value == nil {
+		return "tahwil.refFromValue: nil *Value"
+	}
+	if e.Kind == Ref && e.Value == e.Value.Value {
+		return "tahwil.refFromValue: *Value == (*Value).Value"
+	}
+
+	return fmt.Sprintf("tahwil.Resolver: invalid *Value.Value type: Kind=%q, Type=T%q", e.Kind, e.Type)
+}
+
+func refFromValue(v *Value) (uint64, error) {
+	var signed int64
+	var isSigned bool
+
+	switch vv := v.Value.(type) {
+	case float32:
+		signed, isSigned = int64(vv), true
+	case float64:
+		signed, isSigned = int64(vv), true
+	case int:
+		signed, isSigned = int64(vv), true
+	case int8:
+		signed, isSigned = int64(vv), true
+	case int16:
+		signed, isSigned = int64(vv), true
+	case int32:
+		signed, isSigned = int64(vv), true
+	case int64:
+		signed, isSigned = vv, true
+	case uint:
+		return uint64(vv), nil
+	case uint8:
+		return uint64(vv), nil
+	case uint16:
+		return uint64(vv), nil
+	case uint32:
+		return uint64(vv), nil
+	case uint64:
+		return vv, nil
+	default:
+		return 0, &ResolverError{Value: v, Kind: Ref, Type: string(Uint64)}
+	}
+
+	if isSigned && signed < 0 {
+		return 0, &ResolverError{Value: v, Kind: Ref, Type: string(Uint64)}
+	}
+	return uint64(signed), nil //nolint:gosec // bounds checked above
 }
