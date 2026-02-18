@@ -18,18 +18,53 @@ func (e *InvalidMapperKindError) Error() string {
 	return "tahwil.ToValue: unsupported kind (" + e.Kind + ")"
 }
 
+type structFieldInfo struct {
+	index int
+	key   string
+}
+
 type valueMapper struct {
 	// references during serialization
 	refs map[uintptr]uint64
 	// refid that was last generated
 	lastRefid uint64
+	// structFieldCache caches exported struct fields per type
+	structFieldCache map[reflect.Type][]structFieldInfo
 }
 
 func newValueMapper() *valueMapper {
 	return &valueMapper{
-		refs:      make(map[uintptr]uint64),
-		lastRefid: 0,
+		refs:             make(map[uintptr]uint64),
+		lastRefid:        0,
+		structFieldCache: make(map[reflect.Type][]structFieldInfo),
 	}
+}
+
+func (vm *valueMapper) cachedStructFields(t reflect.Type) []structFieldInfo {
+	if fields, ok := vm.structFieldCache[t]; ok {
+		return fields
+	}
+
+	fields := make([]structFieldInfo, 0, t.NumField())
+	for i := 0; i < t.NumField(); i++ {
+		ft := t.Field(i)
+		if !ft.IsExported() {
+			continue
+		}
+		k := ft.Tag.Get("json")
+		if k != "" {
+			k, _, _ = strings.Cut(k, ",")
+		}
+		if k == "" {
+			k = ft.Name
+		}
+		if k == "-" || k == "_" {
+			continue
+		}
+		fields = append(fields, structFieldInfo{index: i, key: k})
+	}
+	vm.structFieldCache[t] = fields
+	return fields
 }
 
 func (vm *valueMapper) saveRef(v reflect.Value) uint64 {
@@ -81,24 +116,9 @@ func (vm *valueMapper) toValueMap(v reflect.Value) (result map[string]*Value, er
 	}
 
 	if kind == reflect.Struct {
-		for i := 0; i < v.NumField(); i++ {
-			ft := v.Type().Field(i)
-			k := ft.Tag.Get("json")
-			if k != "" {
-				k, _, _ = strings.Cut(k, ",")
-			}
-			if k == "" {
-				k = ft.Name
-			}
-			if k == "-" || k == "_" {
-				continue
-			}
-
-			f := v.Field(i)
-			if !f.CanInterface() {
-				continue
-			}
-			result[k], err = vm.toValue(f)
+		for _, fi := range vm.cachedStructFields(v.Type()) {
+			f := v.Field(fi.index)
+			result[fi.key], err = vm.toValue(f)
 			if err != nil {
 				return nil, err
 			}
