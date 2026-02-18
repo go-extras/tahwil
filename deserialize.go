@@ -60,8 +60,10 @@ func (vu *valueUnmapper) fieldByTag(t reflect.Type, key string) string {
 	}
 
 	vu.fieldTagCache[t] = make(map[string]string)
-	for i := 0; i < t.NumField(); i++ {
-		ft := t.Field(i)
+	for _, ft := range reflect.VisibleFields(t) {
+		if !ft.IsExported() || ft.Anonymous {
+			continue
+		}
 		k := ft.Tag.Get("json")
 		if k != "" {
 			k, _, _ = strings.Cut(k, ",")

@@ -248,6 +248,34 @@ func fromValueTests() []fromValueTest {
 		out: &omitemptyT{Name: "test", Value: 42},
 	})
 
+	// embedded struct fields should deserialize from flat keys
+	result = append(result, fromValueTest{
+		in: &tahwil.Value{
+			Refid: 1,
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
+				Refid: 2,
+				Kind:  tahwil.Struct,
+				Value: map[string]*tahwil.Value{
+					"name": {
+						Refid: 3,
+						Kind:  tahwil.String,
+						Value: "embedded",
+					},
+					"value": {
+						Refid: 4,
+						Kind:  tahwil.Int,
+						Value: int64(99),
+					},
+				},
+			},
+		},
+		out: &embeddedOuterT{
+			embeddedBaseT: embeddedBaseT{Name: "embedded"},
+			Value:         99,
+		},
+	})
+
 	p1 := &personT{
 		Name: "Martin",
 		Parent: &personT{

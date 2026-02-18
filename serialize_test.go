@@ -35,6 +35,15 @@ type omitemptyT struct {
 	Value int    `json:"value,omitempty"`
 }
 
+type embeddedBaseT struct {
+	Name string `json:"name"`
+}
+
+type embeddedOuterT struct {
+	embeddedBaseT
+	Value int `json:"value"`
+}
+
 type valueTest struct {
 	in  any
 	out *tahwil.Value
@@ -419,6 +428,34 @@ func valueTests() []valueTest {
 						Refid: 0,
 						Kind:  tahwil.Int,
 						Value: 42,
+					},
+				},
+			},
+		},
+	})
+
+	// embedded struct fields should be promoted (flat, not nested)
+	result = append(result, valueTest{
+		in: &embeddedOuterT{
+			embeddedBaseT: embeddedBaseT{Name: "embedded"},
+			Value:         99,
+		},
+		out: &tahwil.Value{
+			Refid: 1,
+			Kind:  tahwil.Ptr,
+			Value: &tahwil.Value{
+				Refid: 0,
+				Kind:  tahwil.Struct,
+				Value: map[string]*tahwil.Value{
+					"name": {
+						Refid: 0,
+						Kind:  tahwil.String,
+						Value: "embedded",
+					},
+					"value": {
+						Refid: 0,
+						Kind:  tahwil.Int,
+						Value: 99,
 					},
 				},
 			},
