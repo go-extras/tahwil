@@ -34,10 +34,18 @@ func (e *InvalidUnmapperKindError) Error() string {
 	return "tahwil.FromValue: unexpected kind (expected: " + e.Expected + ", got: " + e.Kind + ")"
 }
 
+type deferredRef struct {
+	target reflect.Value
+	refid  uint64
+}
+
 type valueUnmapper struct {
 	// refs contains pointers to reference values during deserialization
 	// can be used both forward and backward lookups
 	refs map[uint64]reflect.Value
+	// deferred holds forward references that could not be resolved during the
+	// main walk because the target refid had not been visited yet
+	deferred []deferredRef
 	// fieldTagCache holds type => json:<tag> => field
 	// e.g. if a struct Struct has a field that is called FieldName
 	// and it has a struct tag `json:"field_name", filedTagCache will hold
@@ -398,21 +406,24 @@ func (vu *valueUnmapper) fromStructValue(data *Value, v reflect.Value) error {
 }
 
 func (vu *valueUnmapper) fromRefValue(data *Value, v reflect.Value) error {
-	ref := data.Value.(*Reference)
-	if refv, ok := vu.refs[ref.Refid]; ok {
+	refid, err := refFromValue(data)
+	if err != nil {
+		return &UnmapperError{cause: err}
+	}
+	if refv, ok := vu.refs[refid]; ok {
 		v.Set(refv)
 		return nil
 	}
-	err := vu.fromValue(ref.Value, v)
-	if err != nil {
-		return err
-	}
-
+	// forward reference: target not yet visited, defer resolution
+	vu.deferred = append(vu.deferred, deferredRef{target: v, refid: refid})
 	return nil
 }
 
 // fills v with the values from data
 func (vu *valueUnmapper) fromValue(data *Value, v reflect.Value) error {
+	if data == nil {
+		return &UnmapperError{text: "nil *Value node"}
+	}
 	if data.Refid != 0 {
 		vu.refs[data.Refid] = v
 	}
@@ -451,16 +462,19 @@ func FromValue(data *Value, v any) error {
 		return &UnmapperError{text: "value must be non-nil Pointer"}
 	}
 
-	resolver := NewResolver(data)
 	vu := newValueUnmapper()
-	if err := resolver.Resolve(); err != nil {
-		return &UnmapperError{cause: err}
-	}
-	if resolver.HasUnresolved() {
-		return &UnmapperError{text: "can't resolve all refs, invalid input"}
+	if err := vu.fromValue(data, rv); err != nil {
+		return err
 	}
 
-	return vu.fromValue(data, rv)
+	for _, d := range vu.deferred {
+		refv, ok := vu.refs[d.refid]
+		if !ok {
+			return &UnmapperError{text: "can't resolve all refs, invalid input"}
+		}
+		d.target.Set(refv)
+	}
+	return nil
 }
 
 // Unmarshal is a type-safe generic wrapper around FromValue.

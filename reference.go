@@ -117,7 +117,7 @@ func (r *Resolver) resolveWIthSubvalues(v *Value) error {
 	return nil
 }
 
-func (r *Resolver) refFromValue(v *Value) (uint64, error) {
+func refFromValue(v *Value) (uint64, error) {
 	var signed int64
 	var isSigned bool
 
@@ -157,7 +157,7 @@ func (r *Resolver) refFromValue(v *Value) (uint64, error) {
 }
 
 func (r *Resolver) resolveRef(v *Value) error {
-	refid, err := r.refFromValue(v)
+	refid, err := refFromValue(v)
 	if err != nil {
 		return err
 	}
