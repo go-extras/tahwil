@@ -5,6 +5,45 @@ import (
 	"strings"
 )
 
+type signedInt interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64
+}
+
+type unsignedInt interface {
+	~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64
+}
+
+type floatNum interface {
+	~float32 | ~float64
+}
+
+func trySetInt[T signedInt](v reflect.Value, val T) bool {
+	i := int64(val)
+	if !v.OverflowInt(i) {
+		v.SetInt(i)
+		return true
+	}
+	return false
+}
+
+func trySetUint[T unsignedInt](v reflect.Value, val T) bool {
+	u := uint64(val)
+	if !v.OverflowUint(u) {
+		v.SetUint(u)
+		return true
+	}
+	return false
+}
+
+func trySetFloat[T floatNum](v reflect.Value, val T) bool {
+	f := float64(val)
+	if !v.OverflowFloat(f) {
+		v.SetFloat(f)
+		return true
+	}
+	return false
+}
+
 type UnmapperError struct {
 	text string
 }
@@ -86,34 +125,28 @@ func (vu *valueUnmapper) fromBoolValue(data *Value, v reflect.Value) error {
 	}
 }
 
-//nolint:dupl // false positive!
 func (vu *valueUnmapper) fromIntValue(data *Value, v reflect.Value) error {
 	switch v.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		switch vv := data.Value.(type) {
 		case int:
-			if !v.OverflowInt(int64(vv)) {
-				v.SetInt(int64(vv))
+			if trySetInt(v, vv) {
 				return nil
 			}
 		case int8:
-			if !v.OverflowInt(int64(vv)) {
-				v.SetInt(int64(vv))
+			if trySetInt(v, vv) {
 				return nil
 			}
 		case int16:
-			if !v.OverflowInt(int64(vv)) {
-				v.SetInt(int64(vv))
+			if trySetInt(v, vv) {
 				return nil
 			}
 		case int32:
-			if !v.OverflowInt(int64(vv)) {
-				v.SetInt(int64(vv))
+			if trySetInt(v, vv) {
 				return nil
 			}
 		case int64:
-			if !v.OverflowInt(vv) {
-				v.SetInt(vv)
+			if trySetInt(v, vv) {
 				return nil
 			}
 		}
@@ -125,34 +158,28 @@ func (vu *valueUnmapper) fromIntValue(data *Value, v reflect.Value) error {
 	return &InvalidUnmapperKindError{Expected: "int|int8|int16|int32|int64", Kind: v.Kind().String()}
 }
 
-//nolint:dupl // false positive!
 func (vu *valueUnmapper) fromUintValue(data *Value, v reflect.Value) error {
 	switch v.Kind() {
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		switch vv := data.Value.(type) {
 		case uint:
-			if !v.OverflowUint(uint64(vv)) {
-				v.SetUint(uint64(vv))
+			if trySetUint(v, vv) {
 				return nil
 			}
 		case uint8:
-			if !v.OverflowUint(uint64(vv)) {
-				v.SetUint(uint64(vv))
+			if trySetUint(v, vv) {
 				return nil
 			}
 		case uint16:
-			if !v.OverflowUint(uint64(vv)) {
-				v.SetUint(uint64(vv))
+			if trySetUint(v, vv) {
 				return nil
 			}
 		case uint32:
-			if !v.OverflowUint(uint64(vv)) {
-				v.SetUint(uint64(vv))
+			if trySetUint(v, vv) {
 				return nil
 			}
 		case uint64:
-			if !v.OverflowUint(vv) {
-				v.SetUint(vv)
+			if trySetUint(v, vv) {
 				return nil
 			}
 		}
@@ -169,13 +196,11 @@ func (vu *valueUnmapper) fromFloatValue(data *Value, v reflect.Value) error {
 	case reflect.Float32, reflect.Float64:
 		switch vv := data.Value.(type) {
 		case float32:
-			if !v.OverflowFloat(float64(vv)) {
-				v.SetFloat(float64(vv))
+			if trySetFloat(v, vv) {
 				return nil
 			}
 		case float64:
-			if !v.OverflowFloat(vv) {
-				v.SetFloat(vv)
+			if trySetFloat(v, vv) {
 				return nil
 			}
 		}

@@ -81,7 +81,7 @@ func fixSlice(kind Kind, v any) (any, error) {
 
 // fixTypes recursively fixes field types after json.Unmarshal
 //
-//nolint:gocyclo // go lacks generics and as such there is no further way to optimize it
+//nolint:gocyclo // type switch on Kind is unavoidable; each case is a one-liner cast
 func fixTypes(kind Kind, v any) (res any, err error) {
 	switch kind {
 	case String, Bool:

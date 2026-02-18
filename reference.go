@@ -117,25 +117,48 @@ func (r *Resolver) resolveWIthSubvalues(v *Value) error {
 	return nil
 }
 
-func (r *Resolver) refFromValue(v *Value) (uint64, error) {
-	var signed int64
-	var isSigned bool
+type signedOrFloat interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~float32 | ~float64
+}
 
+func toUint64Signed[T signedOrFloat](v T) (uint64, bool) {
+	i := int64(v)
+	if i < 0 {
+		return 0, false
+	}
+	return uint64(i), true //nolint:gosec // bounds checked above
+}
+
+func (r *Resolver) refFromValue(v *Value) (uint64, error) {
 	switch vv := v.Value.(type) {
 	case float32:
-		signed, isSigned = int64(vv), true
+		if u, ok := toUint64Signed(vv); ok {
+			return u, nil
+		}
 	case float64:
-		signed, isSigned = int64(vv), true
+		if u, ok := toUint64Signed(vv); ok {
+			return u, nil
+		}
 	case int:
-		signed, isSigned = int64(vv), true
+		if u, ok := toUint64Signed(vv); ok {
+			return u, nil
+		}
 	case int8:
-		signed, isSigned = int64(vv), true
+		if u, ok := toUint64Signed(vv); ok {
+			return u, nil
+		}
 	case int16:
-		signed, isSigned = int64(vv), true
+		if u, ok := toUint64Signed(vv); ok {
+			return u, nil
+		}
 	case int32:
-		signed, isSigned = int64(vv), true
+		if u, ok := toUint64Signed(vv); ok {
+			return u, nil
+		}
 	case int64:
-		signed, isSigned = vv, true
+		if u, ok := toUint64Signed(vv); ok {
+			return u, nil
+		}
 	case uint:
 		return uint64(vv), nil
 	case uint8:
@@ -149,11 +172,7 @@ func (r *Resolver) refFromValue(v *Value) (uint64, error) {
 	default:
 		return 0, &ResolverError{Value: v, Kind: Ref, Type: string(Uint64)}
 	}
-
-	if isSigned && signed < 0 {
-		return 0, &ResolverError{Value: v, Kind: Ref, Type: string(Uint64)}
-	}
-	return uint64(signed), nil //nolint:gosec // bounds checked above
+	return 0, &ResolverError{Value: v, Kind: Ref, Type: string(Uint64)}
 }
 
 func (r *Resolver) resolveRef(v *Value) error {
