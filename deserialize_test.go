@@ -528,3 +528,60 @@ func TestFromValue(t *testing.T) {
 		}
 	}
 }
+
+func TestUnmarshal(t *testing.T) {
+	// string
+	strData := &tahwil.Value{
+		Refid: 1,
+		Kind:  tahwil.Ptr,
+		Value: &tahwil.Value{
+			Refid: 2,
+			Kind:  tahwil.String,
+			Value: "hello",
+		},
+	}
+	s, err := tahwil.Unmarshal[string](strData)
+	if err != nil {
+		t.Fatalf("Unmarshal[string]: %v", err)
+	}
+	if *s != "hello" {
+		t.Errorf("Unmarshal[string] = %q, want %q", *s, "hello")
+	}
+
+	// struct
+	structData := &tahwil.Value{
+		Refid: 1,
+		Kind:  tahwil.Ptr,
+		Value: &tahwil.Value{
+			Refid: 2,
+			Kind:  tahwil.Struct,
+			Value: map[string]*tahwil.Value{
+				"name": {Refid: 3, Kind: tahwil.String, Value: "Alice"},
+				"parent": {Refid: 4, Kind: tahwil.Ptr, Value: nil},
+				"children": {Refid: 5, Kind: tahwil.Slice, Value: nil},
+			},
+		},
+	}
+	p, err := tahwil.Unmarshal[personT](structData)
+	if err != nil {
+		t.Fatalf("Unmarshal[personT]: %v", err)
+	}
+	if p.Name != "Alice" {
+		t.Errorf("Unmarshal[personT].Name = %q, want %q", p.Name, "Alice")
+	}
+
+	// error propagation
+	badData := &tahwil.Value{
+		Refid: 1,
+		Kind:  tahwil.Ptr,
+		Value: &tahwil.Value{
+			Refid: 2,
+			Kind:  tahwil.String,
+			Value: 42,
+		},
+	}
+	_, err = tahwil.Unmarshal[string](badData)
+	if err == nil {
+		t.Fatal("expected error from Unmarshal with bad data, got nil")
+	}
+}

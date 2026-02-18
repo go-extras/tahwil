@@ -462,3 +462,13 @@ func FromValue(data *Value, v any) error {
 
 	return vu.fromValue(data, rv)
 }
+
+// Unmarshal is a type-safe generic wrapper around FromValue.
+// It allocates a new T, fills it from data, and returns a pointer to it.
+func Unmarshal[T any](data *Value) (*T, error) {
+	var result T
+	if err := FromValue(data, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
