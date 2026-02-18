@@ -6,11 +6,19 @@ import (
 )
 
 type UnmapperError struct {
-	text string
+	text  string
+	cause error
 }
 
 func (e *UnmapperError) Error() string {
+	if e.cause != nil {
+		return "tahwil.FromValue: " + e.cause.Error()
+	}
 	return "tahwil.FromValue: " + e.text
+}
+
+func (e *UnmapperError) Unwrap() error {
+	return e.cause
 }
 
 // An InvalidUnmapperKindError describes an invalid argument passed to FromValue.
@@ -401,7 +409,7 @@ func FromValue(data *Value, v any) error {
 	resolver := NewResolver(data)
 	vu := newValueUnmapper()
 	if err := resolver.Resolve(); err != nil {
-		return &UnmapperError{text: err.Error()}
+		return &UnmapperError{cause: err}
 	}
 	if resolver.HasUnresolved() {
 		return &UnmapperError{text: "can't resolve all refs, invalid input"}
